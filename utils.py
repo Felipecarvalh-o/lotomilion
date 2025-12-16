@@ -1,8 +1,4 @@
 def converter_lista(texto):
-    """
-    Converte uma string de dezenas em lista de inteiros.
-    Aceita espaços, vírgulas ou hífen.
-    """
     if not texto:
         return []
 
