@@ -20,12 +20,12 @@ st.markdown("""
 .numero {
     background:#7A1FA2;
     color:white;
-    padding:12px;
+    padding:10px;
     border-radius:12px;
-    font-size:16px;
+    font-size:15px;
     font-weight:700;
     text-align:center;
-    margin:6px;
+    margin:4px;
 }
 
 .bloco-jogo {
@@ -37,21 +37,17 @@ st.markdown("""
 .aviso {
     font-size:12px;
     color:#777;
-    margin-top:10px;
+    margin-top:8px;
     text-align:center;
 }
 
-.titulo {
-    color:#7A1FA2;
-    margin-bottom:10px;
+.copy-box {
+    background:#f3e5f5;
+    border-radius:8px;
+    padding:6px;
+    font-size:13px;
+    margin-top:6px;
 }
-
-.score {
-    font-size:14px;
-    font-weight:600;
-    color:#555;
-}
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -80,32 +76,27 @@ st.write(f"👤 **{st.session_state.usuario}**")
 
 st.markdown("""
 Onde o apostador joga com **organização**,  
-pensando em **chegar perto**, bater na **quadra, quina ou 14 pontos**,
-sempre com critério.
+pensando em **chegar perto**, bater na **quadra, quina ou 14 pontos**,  
+sem achismo e sem promessa.
 """)
 
-# ================= AVISO JURÍDICO =================
 st.markdown("""
 <div class='aviso'>
-Este aplicativo é uma ferramenta educacional e estatística.
-Não possui vínculo com a Caixa Econômica Federal ou Loterias Caixa.
-A Lotofácil é um jogo de azar e não há garantia de premiação,
-incluindo 13, 14 ou 15 pontos.
+Ferramenta educacional e estatística.  
+Sem vínculo com a Caixa ou Loterias Caixa.  
+A Lotofácil é jogo de azar e não há garantia de prêmios.
 </div>
 """, unsafe_allow_html=True)
+
+# ================= CONTROLE DE VISUAL =================
+st.divider()
+modo_detalhado = st.toggle("🧩 Modo detalhado (melhor no PC)", value=True)
 
 # ================= ENTRADA =================
 st.subheader("🎯 Monte sua base de 21 dezenas")
 
-fixas_txt = st.text_area(
-    "🔒 9 dezenas FIXAS (aquelas que você confia)",
-    help="Essas dezenas entram em todos os jogos"
-)
-
-variaveis_txt = st.text_area(
-    "🔄 12 dezenas VARIÁVEIS (para rodar o jogo)",
-    help="Essas dezenas fazem a rotação estatística"
-)
+fixas_txt = st.text_area("🔒 9 dezenas FIXAS (aquelas que você confia)")
+variaveis_txt = st.text_area("🔄 12 dezenas VARIÁVEIS (para rodar o jogo)")
 
 # ================= PROCESSAMENTO =================
 if st.button("🧠 Gerar Jogos Estratégicos"):
@@ -122,13 +113,11 @@ if st.button("🧠 Gerar Jogos Estratégicos"):
         st.stop()
 
     dezenas = sorted(set(fixas + variaveis))
-
     if len(dezenas) != 21:
-        st.error("As dezenas fixas e variáveis não podem se repetir.")
+        st.error("Não repita dezenas entre fixas e variáveis.")
         st.stop()
 
-    jogos = gerar_fechamento_21_8(dezenas)
-    st.session_state.jogos = jogos
+    st.session_state.jogos = gerar_fechamento_21_8(dezenas)
     st.session_state.analise_pronta = True
     st.session_state.resultado_sim = None
 
@@ -143,12 +132,22 @@ if st.button("🧠 Gerar Jogos Estratégicos"):
 if st.session_state.get("analise_pronta"):
 
     st.subheader("🎲 Jogos Gerados (8 bilhetes)")
+    st.caption("Modelo muito usado por quem busca organização e chegar perto do 14.")
 
     for i, jogo in enumerate(st.session_state.jogos, 1):
-        st.write(f"**Jogo {i}**")
+
+        if modo_detalhado:
+            st.markdown(f"### Jogo {i}")
+
+        numeros_str = " ".join(f"{n:02d}" for n in jogo)
+
         cols = st.columns(5)
-        for c, n in zip(cols, jogo):
+        for c, n in zip(cols * 3, jogo):
             c.markdown(f"<div class='numero'>{n:02d}</div>", unsafe_allow_html=True)
+
+        st.code(numeros_str, language="text")
+        st.caption("👆 Copie e cole direto no volante")
+
         st.markdown("<div class='bloco-jogo'></div>", unsafe_allow_html=True)
 
     # ================= SIMULAÇÃO =================
@@ -170,7 +169,7 @@ if st.session_state.get("analise_pronta"):
         c3.metric("❌ Zeros", r["zeros"])
         c4.metric("🔢 Sorteios", r["total"])
 
-# ================= GRÁFICO =================
+# ================= HISTÓRICO =================
 st.divider()
 st.subheader("📈 Histórico do Usuário")
 
@@ -192,4 +191,3 @@ st.subheader("🏅 Ranking Geral")
 ranking = gerar_ranking()
 if ranking:
     st.dataframe(pd.DataFrame(ranking), use_container_width=True)
-
