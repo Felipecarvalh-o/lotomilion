@@ -3,7 +3,6 @@ from streamlit.components.v1 import html
 
 from utils import converter_lista
 from engine import gerar_fechamento_21_8, gerar_jogos_quentes_frios
-from simulador import simular_cenario
 
 # ================= CONFIG =================
 st.set_page_config(
@@ -17,7 +16,6 @@ for key, default in {
     "jogos": None,
     "classificacao": None,
     "nome_estrategia": None,
-    "simulado": None,
     "resultado_real": None,
     "resultado_ativo": False
 }.items():
@@ -40,13 +38,13 @@ st.markdown("""
 .fria {background:#3949AB;}
 .neutra {background:#7A1FA2;}
 
-.bloco-jogo {
-    margin-bottom:26px;
-    padding-bottom:18px;
-    border-bottom:1px solid #2a2a2a;
+.badge {
+    padding:4px 12px;
+    border-radius:14px;
+    font-size:12px;
+    color:white;
+    margin-right:6px;
 }
-
-.badge {padding:4px 12px; border-radius:14px; font-size:12px; color:white;}
 .badge-quente {background:#E53935;}
 .badge-morna {background:#FB8C00;}
 .badge-fria {background:#3949AB;}
@@ -59,6 +57,12 @@ st.markdown("""
     font-size:13px;
     border:none;
     cursor:pointer;
+}
+
+.bloco-jogo {
+    margin-bottom:26px;
+    padding-bottom:18px;
+    border-bottom:1px solid #2a2a2a;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -101,17 +105,9 @@ if st.button("🧠 Gerar Jogos"):
         st.session_state.nome_estrategia = "Fechamento 21"
     else:
         jogos, classificacao = gerar_jogos_quentes_frios(dezenas)
-        quentes = classificacao["quentes"]
-        frias = classificacao["frias"]
-        mornas = [n for n in dezenas if n not in quentes and n not in frias]
-
         st.session_state.jogos = jogos
-        st.session_state.classificacao = {
-            "quentes": quentes,
-            "mornas": mornas,
-            "frias": frias
-        }
-        st.session_state.nome_estrategia = "Quentes e Frios"
+        st.session_state.classificacao = classificacao
+        st.session_state.nome_estrategia = "Quentes / Mornas / Frias"
 
     st.session_state.resultado_real = None
     st.session_state.resultado_ativo = False
@@ -119,37 +115,42 @@ if st.button("🧠 Gerar Jogos"):
 # ================= RESULTADOS =================
 if st.session_state.jogos:
 
-    st.subheader("🎲 Passo 3 — Jogos (15 dezenas cada)")
+    st.subheader("🎲 Passo 3 — Jogos Gerados")
 
     # ===== RESULTADO REAL =====
     st.subheader("📥 Resultado Oficial (opcional)")
     resultado_txt = st.text_input("Digite as 15 dezenas sorteadas")
 
     if st.button("📌 Aplicar Resultado"):
-        resultado = converter_lista(resultado_txt)
-        if len(resultado) == 15:
-            st.session_state.resultado_real = resultado
+        r = converter_lista(resultado_txt)
+        if len(r) == 15:
+            st.session_state.resultado_real = r
             st.session_state.resultado_ativo = True
         else:
             st.warning("Informe exatamente 15 dezenas.")
 
-    # ===== JOGOS =====
     for i, jogo in enumerate(st.session_state.jogos, 1):
 
         st.markdown(f"### Jogo {i} — 15 dezenas")
 
+        if st.session_state.classificacao:
+            st.markdown("""
+            <span class="badge badge-quente">🔥 Quentes</span>
+            <span class="badge badge-morna">🟠 Mornas</span>
+            <span class="badge badge-fria">❄️ Frias</span>
+            """, unsafe_allow_html=True)
+
         for linha in range(0, 15, 5):
             cols = st.columns(5)
             for c, n in zip(cols, jogo[linha:linha+5]):
-
                 classe = "neutra"
                 if st.session_state.classificacao:
                     if n in st.session_state.classificacao["quentes"]:
                         classe = "quente"
-                    elif n in st.session_state.classificacao["frias"]:
-                        classe = "fria"
-                    else:
+                    elif n in st.session_state.classificacao["mornas"]:
                         classe = "morna"
+                    else:
+                        classe = "fria"
 
                 c.markdown(f"<div class='numero {classe}'>{n:02d}</div>", unsafe_allow_html=True)
 
