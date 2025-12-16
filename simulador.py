@@ -1,13 +1,6 @@
 import random
 
-print("SIMULADOR CARREGADO")
-
 def simular_cenario(jogos, total_sorteios=500, universo=25, tamanho_jogo=15):
-    """
-    Simulação estatística educacional da Lotofácil.
-    Não prevê resultados reais.
-    """
-
     resultados = []
     zeros = 0
     maximo = 0
@@ -18,16 +11,12 @@ def simular_cenario(jogos, total_sorteios=500, universo=25, tamanho_jogo=15):
 
         for jogo in jogos:
             pontos = len(sorteio & set(jogo))
-            if pontos > melhor:
-                melhor = pontos
+            melhor = max(melhor, pontos)
 
         resultados.append(melhor)
-
         if melhor == 0:
             zeros += 1
-
-        if melhor > maximo:
-            maximo = melhor
+        maximo = max(maximo, melhor)
 
     media = round(sum(resultados) / len(resultados), 2)
 
