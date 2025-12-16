@@ -9,7 +9,7 @@ from historico import registrar_analise, listar_analises_usuario, gerar_ranking
 
 # ================= CONFIG =================
 st.set_page_config(
-    page_title="Lotofácil Estratégica",
+    page_title="Lotomilion Estrategista",
     page_icon="🟣",
     layout="centered"
 )
@@ -17,10 +17,41 @@ st.set_page_config(
 # ================= ESTILO =================
 st.markdown("""
 <style>
-.numero {background:#7A1FA2;color:white;padding:10px;border-radius:10px;
-font-size:16px;font-weight:700;text-align:center;}
-.bloco-jogo {margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #e0e0e0;}
-.aviso {font-size:12px;color:#777;margin-top:10px;}
+.numero {
+    background:#7A1FA2;
+    color:white;
+    padding:12px;
+    border-radius:12px;
+    font-size:16px;
+    font-weight:700;
+    text-align:center;
+    margin:6px;
+}
+
+.bloco-jogo {
+    margin-bottom:20px;
+    padding-bottom:10px;
+    border-bottom:1px solid #e0e0e0;
+}
+
+.aviso {
+    font-size:12px;
+    color:#777;
+    margin-top:10px;
+    text-align:center;
+}
+
+.titulo {
+    color:#7A1FA2;
+    margin-bottom:10px;
+}
+
+.score {
+    font-size:14px;
+    font-weight:600;
+    color:#555;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -29,7 +60,7 @@ st.session_state.setdefault("logado", False)
 st.session_state.setdefault("usuario", "")
 
 if not st.session_state.logado:
-    st.title("🔐 Acesso Lotofácil Estratégica")
+    st.title("🔐 Acesso Lotomilion Estrategista")
     u = st.text_input("Usuário")
     s = st.text_input("Senha", type="password")
 
@@ -44,7 +75,7 @@ if not st.session_state.logado:
     st.stop()
 
 # ================= TOPO =================
-st.title("🟣 Lotofácil Estratégica")
+st.title("🟣 Lotomilion Estrategista")
 st.write(f"👤 **{st.session_state.usuario}**")
 
 st.markdown("""
@@ -52,6 +83,16 @@ Onde o apostador joga com **organização**,
 pensando em **chegar perto**, bater na **quadra, quina ou 14 pontos**,
 sempre com critério.
 """)
+
+# ================= AVISO JURÍDICO =================
+st.markdown("""
+<div class='aviso'>
+Este aplicativo é uma ferramenta educacional e estatística.
+Não possui vínculo com a Caixa Econômica Federal ou Loterias Caixa.
+A Lotofácil é um jogo de azar e não há garantia de premiação,
+incluindo 13, 14 ou 15 pontos.
+</div>
+""", unsafe_allow_html=True)
 
 # ================= ENTRADA =================
 st.subheader("🎯 Monte sua base de 21 dezenas")
@@ -105,7 +146,7 @@ if st.session_state.get("analise_pronta"):
 
     for i, jogo in enumerate(st.session_state.jogos, 1):
         st.write(f"**Jogo {i}**")
-        cols = st.columns(15)
+        cols = st.columns(5)
         for c, n in zip(cols, jogo):
             c.markdown(f"<div class='numero'>{n:02d}</div>", unsafe_allow_html=True)
         st.markdown("<div class='bloco-jogo'></div>", unsafe_allow_html=True)
@@ -152,12 +193,3 @@ ranking = gerar_ranking()
 if ranking:
     st.dataframe(pd.DataFrame(ranking), use_container_width=True)
 
-# ================= AVISO LEGAL =================
-st.markdown("""
-<div class='aviso'>
-Este aplicativo é uma ferramenta educacional e estatística.
-Não possui vínculo com a Caixa Econômica Federal ou Loterias Caixa.
-A Lotofácil é um jogo de azar e não há garantia de premiação,
-incluindo 13, 14 ou 15 pontos.
-</div>
-""", unsafe_allow_html=True)
