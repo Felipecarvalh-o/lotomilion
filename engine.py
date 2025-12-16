@@ -32,7 +32,6 @@ def gerar_fechamento_21_8(dezenas_21):
     for combo in combinacoes:
         jogo = sorted(fixas + list(combo))
         jogos.append(jogo)
-
         if len(jogos) == 8:
             break
 
@@ -40,15 +39,13 @@ def gerar_fechamento_21_8(dezenas_21):
 
 
 # =========================================
-# ESTRATÉGIA FREQUENCIAL (QUENTES, MORNAS, FRIAS)
+# ESTRATÉGIA FREQUENCIAL (QUENTES / MORNAS / FRIAS)
 # =========================================
 def gerar_jogos_quentes_frios(dezenas_21, total_jogos=8):
     """
-    Estratégia educacional de leitura frequencial.
-
-    - Usa APENAS as 21 dezenas escolhidas pelo usuário
-    - Simula comportamento de quente / morna / fria
-    - Retorna jogos + classificação clara para o app
+    Estratégia educacional frequencial.
+    NÃO usa resultados oficiais.
+    Apenas leitura estatística simulada.
     """
 
     dezenas = sorted(set(dezenas_21))
@@ -56,23 +53,17 @@ def gerar_jogos_quentes_frios(dezenas_21, total_jogos=8):
     if len(dezenas) != 21:
         raise ValueError("Informe exatamente 21 dezenas.")
 
-    # -------------------------
-    # SIMULA PESOS FREQUENCIAIS
-    # -------------------------
+    # Simula pesos
     pesos = []
     for n in dezenas:
-        # peso maior = mais "quente"
         pesos.extend([n] * random.randint(1, 6))
 
     contador = Counter(pesos)
     ordenadas = [n for n, _ in contador.most_common()]
 
-    # -------------------------
-    # CLASSIFICAÇÃO CLARA
-    # -------------------------
-    quentes = ordenadas[:7]          # mais frequentes
-    mornas = ordenadas[7:14]         # intermediárias
-    frias = ordenadas[14:]           # menos frequentes
+    quentes = ordenadas[:7]
+    mornas = ordenadas[7:14]
+    frias = ordenadas[14:]
 
     jogos = []
 
