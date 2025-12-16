@@ -40,14 +40,15 @@ def gerar_fechamento_21_8(dezenas_21):
 
 
 # =========================================
-# ESTRATÉGIA FREQUENCIAL (QUENTES & FRIOS)
+# ESTRATÉGIA FREQUENCIAL (QUENTES, MORNAS, FRIAS)
 # =========================================
 def gerar_jogos_quentes_frios(dezenas_21, total_jogos=8):
     """
-    Estratégia educacional de Quentes & Frios
+    Estratégia educacional de leitura frequencial.
 
-    Usa APENAS as dezenas escolhidas pelo usuário,
-    simulando uma leitura frequencial (sem histórico real).
+    - Usa APENAS as 21 dezenas escolhidas pelo usuário
+    - Simula comportamento de quente / morna / fria
+    - Retorna jogos + classificação clara para o app
     """
 
     dezenas = sorted(set(dezenas_21))
@@ -55,27 +56,35 @@ def gerar_jogos_quentes_frios(dezenas_21, total_jogos=8):
     if len(dezenas) != 21:
         raise ValueError("Informe exatamente 21 dezenas.")
 
-    # Simula pesos frequenciais (educacional)
+    # -------------------------
+    # SIMULA PESOS FREQUENCIAIS
+    # -------------------------
     pesos = []
     for n in dezenas:
-        pesos.extend([n] * random.randint(1, 5))
+        # peso maior = mais "quente"
+        pesos.extend([n] * random.randint(1, 6))
 
     contador = Counter(pesos)
-
     ordenadas = [n for n, _ in contador.most_common()]
 
-    quentes = ordenadas[:12]
-    frias = ordenadas[-12:]
+    # -------------------------
+    # CLASSIFICAÇÃO CLARA
+    # -------------------------
+    quentes = ordenadas[:7]          # mais frequentes
+    mornas = ordenadas[7:14]         # intermediárias
+    frias = ordenadas[14:]           # menos frequentes
 
     jogos = []
 
     for _ in range(total_jogos):
         jogo = set()
-        jogo.update(random.sample(quentes, 8))
-        jogo.update(random.sample(frias, 7))
+        jogo.update(random.sample(quentes, 5))
+        jogo.update(random.sample(mornas, 5))
+        jogo.update(random.sample(frias, 5))
         jogos.append(sorted(jogo))
 
     return jogos, {
         "quentes": quentes,
+        "mornas": mornas,
         "frias": frias
     }
