@@ -20,43 +20,54 @@ st.markdown("""
 .numero {
     background:#7A1FA2;
     color:white;
-    padding:10px;
+    padding:12px;
     border-radius:12px;
-    font-size:15px;
+    font-size:16px;
     font-weight:700;
     text-align:center;
-    margin:4px;
 }
-
 .bloco-jogo {
-    margin-bottom:20px;
-    padding-bottom:10px;
-    border-bottom:1px solid #e0e0e0;
+    margin-bottom:22px;
+    padding-bottom:12px;
+    border-bottom:1px solid #e6e6e6;
 }
-
+.aviso-topo {
+    font-size:12px;
+    color:#666;
+    background:#f7f2fa;
+    padding:8px 12px;
+    border-radius:8px;
+    margin-bottom:14px;
+}
 .aviso {
     font-size:12px;
     color:#777;
-    margin-top:8px;
-    text-align:center;
+    margin-top:16px;
 }
-
-.copy-box {
-    background:#f3e5f5;
-    border-radius:8px;
-    padding:6px;
-    font-size:13px;
-    margin-top:6px;
+.titulo-estrategia {
+    border-left:6px solid #7A1FA2;
+    padding-left:12px;
+    margin-top:12px;
+    margin-bottom:10px;
 }
 </style>
+""", unsafe_allow_html=True)
+
+# ================= AVISO JURÍDICO TOPO =================
+st.markdown("""
+<div class='aviso-topo'>
+Ferramenta educacional e estatística independente.  
+Sem vínculo com a Caixa, Loterias Caixa ou órgãos oficiais.
+</div>
 """, unsafe_allow_html=True)
 
 # ================= LOGIN =================
 st.session_state.setdefault("logado", False)
 st.session_state.setdefault("usuario", "")
+st.session_state.setdefault("estrategia", "fechamento")
 
 if not st.session_state.logado:
-    st.title("🔐 Acesso Lotomilion Estrategista")
+    st.title("🔐 Acesso • Lotomilion Estrategista")
     u = st.text_input("Usuário")
     s = st.text_input("Senha", type="password")
 
@@ -75,28 +86,46 @@ st.title("🟣 Lotomilion Estrategista")
 st.write(f"👤 **{st.session_state.usuario}**")
 
 st.markdown("""
-Onde o apostador joga com **organização**,  
+Aqui o jogo é feito com **organização**,  
 pensando em **chegar perto**, bater na **quadra, quina ou 14 pontos**,  
 sem achismo e sem promessa.
 """)
 
-st.markdown("""
-<div class='aviso'>
-Ferramenta educacional e estatística.  
-Sem vínculo com a Caixa ou Loterias Caixa.  
-A Lotofácil é jogo de azar e não há garantia de prêmios.
-</div>
-""", unsafe_allow_html=True)
+# ================= BOTÕES DE ESTRATÉGIA =================
+c1, c2 = st.columns(2)
 
-# ================= CONTROLE DE VISUAL =================
-st.divider()
-modo_detalhado = st.toggle("🧩 Modo detalhado (melhor no PC)", value=True)
+if c1.button("🧠 Fechamento 21 (Principal)", use_container_width=True):
+    st.session_state.estrategia = "fechamento"
+
+if c2.button("🔥 Frequencial (em breve)", use_container_width=True):
+    st.info("Estratégia frequencial será liberada na próxima atualização.")
+
+# ================= DESCRIÇÃO ESTRATÉGIA =================
+if st.session_state.estrategia == "fechamento":
+    st.markdown("""
+    <div class='titulo-estrategia'>
+        <h4>🧠 Fechamento 21 dezenas (9 Fixas + 12 Variáveis)</h4>
+        <p>
+        Estratégia clássica, muito usada por quem busca <b>chegar perto</b>.  
+        Se as 15 dezenas do sorteio estiverem dentro das 21 escolhidas,
+        o modelo favorece bater <i>quadra, quina ou até 14 pontos</i>,
+        dependendo do cenário.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
 # ================= ENTRADA =================
 st.subheader("🎯 Monte sua base de 21 dezenas")
 
-fixas_txt = st.text_area("🔒 9 dezenas FIXAS (aquelas que você confia)")
-variaveis_txt = st.text_area("🔄 12 dezenas VARIÁVEIS (para rodar o jogo)")
+fixas_txt = st.text_area(
+    "🔒 9 dezenas FIXAS (as que você confia)",
+    help="Entram em todos os jogos"
+)
+
+variaveis_txt = st.text_area(
+    "🔄 12 dezenas VARIÁVEIS (fazem a rotação)",
+    help="Responsáveis pela cobertura estatística"
+)
 
 # ================= PROCESSAMENTO =================
 if st.button("🧠 Gerar Jogos Estratégicos"):
@@ -113,11 +142,14 @@ if st.button("🧠 Gerar Jogos Estratégicos"):
         st.stop()
 
     dezenas = sorted(set(fixas + variaveis))
+
     if len(dezenas) != 21:
-        st.error("Não repita dezenas entre fixas e variáveis.")
+        st.error("As dezenas não podem se repetir.")
         st.stop()
 
-    st.session_state.jogos = gerar_fechamento_21_8(dezenas)
+    jogos = gerar_fechamento_21_8(dezenas)
+
+    st.session_state.jogos = jogos
     st.session_state.analise_pronta = True
     st.session_state.resultado_sim = None
 
@@ -132,22 +164,15 @@ if st.button("🧠 Gerar Jogos Estratégicos"):
 if st.session_state.get("analise_pronta"):
 
     st.subheader("🎲 Jogos Gerados (8 bilhetes)")
-    st.caption("Modelo muito usado por quem busca organização e chegar perto do 14.")
 
     for i, jogo in enumerate(st.session_state.jogos, 1):
-
-        if modo_detalhado:
-            st.markdown(f"### Jogo {i}")
-
-        numeros_str = " ".join(f"{n:02d}" for n in jogo)
-
+        st.markdown(f"**Jogo {i}**")
         cols = st.columns(5)
-        for c, n in zip(cols * 3, jogo):
-            c.markdown(f"<div class='numero'>{n:02d}</div>", unsafe_allow_html=True)
-
-        st.code(numeros_str, language="text")
-        st.caption("👆 Copie e cole direto no volante")
-
+        for idx, n in enumerate(jogo):
+            cols[idx % 5].markdown(
+                f"<div class='numero'>{n:02d}</div>",
+                unsafe_allow_html=True
+            )
         st.markdown("<div class='bloco-jogo'></div>", unsafe_allow_html=True)
 
     # ================= SIMULAÇÃO =================
@@ -169,7 +194,7 @@ if st.session_state.get("analise_pronta"):
         c3.metric("❌ Zeros", r["zeros"])
         c4.metric("🔢 Sorteios", r["total"])
 
-# ================= HISTÓRICO =================
+# ================= GRÁFICO =================
 st.divider()
 st.subheader("📈 Histórico do Usuário")
 
@@ -191,3 +216,12 @@ st.subheader("🏅 Ranking Geral")
 ranking = gerar_ranking()
 if ranking:
     st.dataframe(pd.DataFrame(ranking), use_container_width=True)
+
+# ================= AVISO FINAL =================
+st.markdown("""
+<div class='aviso'>
+Este aplicativo é educacional e estatístico.  
+A Lotofácil é um jogo de azar e não há garantia de premiação,
+inclusive 13, 14 ou 15 pontos.
+</div>
+""", unsafe_allow_html=True)
