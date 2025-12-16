@@ -3,6 +3,7 @@ from streamlit.components.v1 import html
 
 from utils import converter_lista
 from engine import gerar_fechamento_21_8, gerar_jogos_quentes_frios
+from simulador import simular_cenario
 
 # ================= CONFIG =================
 st.set_page_config(
@@ -19,49 +20,38 @@ for k in ["jogos", "classificacao", "resultado_real"]:
 # ================= ESTILO =================
 st.markdown("""
 <style>
-.numero {
-    padding:14px;
-    border-radius:16px;
-    font-size:16px;
-    font-weight:700;
-    text-align:center;
-    color:white;
-}
-.quente {background:#E53935;}
-.morna {background:#FB8C00;}
-.fria {background:#3949AB;}
-.neutra {background:#7A1FA2;}
+.numero {padding:14px;border-radius:16px;font-weight:700;color:white;text-align:center}
+.quente {background:#E53935}
+.morna {background:#FB8C00}
+.fria {background:#3949AB}
+.neutra {background:#7A1FA2}
 
-.badge {padding:4px 12px;border-radius:14px;font-size:12px;color:white;}
-.badge-quente {background:#E53935;}
-.badge-morna {background:#FB8C00;}
-.badge-fria {background:#3949AB;}
+.badge {padding:4px 12px;border-radius:14px;color:white;font-size:12px;margin-right:6px}
+.badge-quente {background:#E53935}
+.badge-morna {background:#FB8C00}
+.badge-fria {background:#3949AB}
 
 .copy-btn {
-    background:#9C27B0;
-    color:white;
-    padding:7px 18px;
-    border-radius:20px;
-    border:none;
-    cursor:pointer;
+    background:#9C27B0;color:white;padding:6px 16px;
+    border-radius:18px;border:none;cursor:pointer
 }
 </style>
 """, unsafe_allow_html=True)
 
 # ================= TOPO =================
 st.title("🟣 Lotomilion Estrategista")
-st.caption("Ferramenta educacional e estatística • Sem vínculo com Loterias Caixa")
+st.caption("Ferramenta educacional • Sem vínculo com Loterias Caixa")
 
 # ================= PASSO 1 =================
 estrategia = st.radio(
     "🧠 Escolha a estratégia",
-    ["🎯 Fechamento 21", "🔥 Frequencial (Quentes / Mornas / Frias)"],
+    ["🎯 Fechamento 21", "🔥 Quentes & Frios"],
     horizontal=True
 )
 
 # ================= PASSO 2 =================
-fixas_txt = st.text_area("🔒 9 dezenas FIXAS")
-variaveis_txt = st.text_area("🔄 12 dezenas VARIÁVEIS")
+fixas_txt = st.text_area("🔒 9 FIXAS")
+variaveis_txt = st.text_area("🔄 12 VARIÁVEIS")
 
 if st.button("🧠 Gerar Jogos"):
     fixas = converter_lista(fixas_txt)
@@ -72,6 +62,9 @@ if st.button("🧠 Gerar Jogos"):
         st.stop()
 
     dezenas = sorted(set(fixas + variaveis))
+    if len(dezenas) != 21:
+        st.error("Não repita dezenas.")
+        st.stop()
 
     if "Fechamento" in estrategia:
         st.session_state.jogos = gerar_fechamento_21_8(dezenas)
@@ -81,11 +74,14 @@ if st.button("🧠 Gerar Jogos"):
         st.session_state.jogos = jogos
         st.session_state.classificacao = classificacao
 
+    st.session_state.resultado_real = None
+
 # ================= RESULTADOS =================
 if st.session_state.jogos:
 
     st.subheader("🎲 Jogos Gerados (15 dezenas)")
 
+    # LEGENDA
     if st.session_state.classificacao:
         st.markdown("""
         <span class="badge badge-quente">🔥 Quentes</span>
@@ -93,6 +89,7 @@ if st.session_state.jogos:
         <span class="badge badge-fria">❄️ Frias</span>
         """, unsafe_allow_html=True)
 
+    # RESULTADO OFICIAL
     resultado_txt = st.text_input("📥 Resultado oficial (15 dezenas, opcional)")
     if st.button("📌 Aplicar Resultado"):
         r = converter_lista(resultado_txt)
@@ -122,11 +119,6 @@ if st.session_state.jogos:
             st.info(f"🎯 {acertos} pontos")
 
         html(
-            f"""
-            <button class="copy-btn"
-            onclick="navigator.clipboard.writeText('{" ".join(f"{n:02d}" for n in jogo)}')">
-            📋 Copiar Jogo
-            </button>
-            """,
+            f"<button class='copy-btn' onclick=\"navigator.clipboard.writeText('{ ' '.join(f'{n:02d}' for n in jogo) }')\">📋 Copiar</button>",
             height=40
         )
