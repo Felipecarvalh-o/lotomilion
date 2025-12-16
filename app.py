@@ -12,15 +12,12 @@ st.set_page_config(
 )
 
 # ================= SESSION STATE =================
-for key, default in {
-    "jogos": None,
-    "classificacao": None,
-    "nome_estrategia": None,
-    "resultado_real": None,
-    "resultado_ativo": False
-}.items():
-    if key not in st.session_state:
-        st.session_state[key] = default
+for k in [
+    "jogos", "classificacao", "resultado_real",
+    "resultado_ativo", "nome_estrategia"
+]:
+    if k not in st.session_state:
+        st.session_state[k] = None
 
 # ================= ESTILO =================
 st.markdown("""
@@ -38,31 +35,18 @@ st.markdown("""
 .fria {background:#3949AB;}
 .neutra {background:#7A1FA2;}
 
-.badge {
-    padding:4px 12px;
-    border-radius:14px;
-    font-size:12px;
-    color:white;
-    margin-right:6px;
-}
-.badge-quente {background:#E53935;}
-.badge-morna {background:#FB8C00;}
-.badge-fria {background:#3949AB;}
+.badge {padding:4px 10px;border-radius:12px;font-size:12px;color:white;margin-right:6px;}
+.badge-q {background:#E53935;}
+.badge-m {background:#FB8C00;}
+.badge-f {background:#3949AB;}
 
 .copy-btn {
     background:#9C27B0;
     color:white;
     padding:7px 18px;
     border-radius:20px;
-    font-size:13px;
     border:none;
     cursor:pointer;
-}
-
-.bloco-jogo {
-    margin-bottom:26px;
-    padding-bottom:18px;
-    border-bottom:1px solid #2a2a2a;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -71,11 +55,17 @@ st.markdown("""
 st.title("🟣 Lotomilion Estrategista")
 st.caption("Ferramenta educacional e estatística • Sem vínculo com Loterias Caixa")
 
+st.markdown("""
+Aqui o jogo é **organizado**, pensado pra  
+chegar na **quadra, quina, 13 ou 14 pontos**,  
+sem chute e sem promessa milagrosa.
+""")
+
 # ================= PASSO 1 =================
 st.subheader("🧠 Passo 1 — Estratégia")
 estrategia = st.radio(
     "",
-    ["🎯 Fechamento 21 (15 dezenas)", "🔥 Frequencial (15 dezenas)"],
+    ["🎯 Fechamento 21", "🔥 Quentes, Mornas e Frias"],
     horizontal=True
 )
 
@@ -95,9 +85,6 @@ if st.button("🧠 Gerar Jogos"):
         st.stop()
 
     dezenas = sorted(set(fixas + variaveis))
-    if len(dezenas) != 21:
-        st.error("Não repita dezenas.")
-        st.stop()
 
     if "Fechamento" in estrategia:
         st.session_state.jogos = gerar_fechamento_21_8(dezenas)
@@ -115,9 +102,16 @@ if st.button("🧠 Gerar Jogos"):
 # ================= RESULTADOS =================
 if st.session_state.jogos:
 
-    st.subheader("🎲 Passo 3 — Jogos Gerados")
+    st.subheader("🎲 Jogos Gerados — 15 dezenas")
 
-    # ===== RESULTADO REAL =====
+    if st.session_state.classificacao:
+        st.markdown("""
+        <span class="badge badge-q">🔥 Quentes</span>
+        <span class="badge badge-m">🟠 Mornas</span>
+        <span class="badge badge-f">❄️ Frias</span>
+        """, unsafe_allow_html=True)
+
+    # Resultado oficial
     st.subheader("📥 Resultado Oficial (opcional)")
     resultado_txt = st.text_input("Digite as 15 dezenas sorteadas")
 
@@ -131,28 +125,25 @@ if st.session_state.jogos:
 
     for i, jogo in enumerate(st.session_state.jogos, 1):
 
-        st.markdown(f"### Jogo {i} — 15 dezenas")
-
-        if st.session_state.classificacao:
-            st.markdown("""
-            <span class="badge badge-quente">🔥 Quentes</span>
-            <span class="badge badge-morna">🟠 Mornas</span>
-            <span class="badge badge-fria">❄️ Frias</span>
-            """, unsafe_allow_html=True)
+        st.markdown(f"### Jogo {i}")
 
         for linha in range(0, 15, 5):
             cols = st.columns(5)
             for c, n in zip(cols, jogo[linha:linha+5]):
+
                 classe = "neutra"
                 if st.session_state.classificacao:
                     if n in st.session_state.classificacao["quentes"]:
                         classe = "quente"
                     elif n in st.session_state.classificacao["mornas"]:
                         classe = "morna"
-                    else:
+                    elif n in st.session_state.classificacao["frias"]:
                         classe = "fria"
 
-                c.markdown(f"<div class='numero {classe}'>{n:02d}</div>", unsafe_allow_html=True)
+                c.markdown(
+                    f"<div class='numero {classe}'>{n:02d}</div>",
+                    unsafe_allow_html=True
+                )
 
         if st.session_state.resultado_ativo:
             acertos = len(set(jogo) & set(st.session_state.resultado_real))
@@ -168,4 +159,8 @@ if st.session_state.jogos:
             height=40
         )
 
-        st.markdown("<div class='bloco-jogo'></div>", unsafe_allow_html=True)
+# ================= AVISO FINAL =================
+st.caption(
+    "Este app é educacional e estatístico. "
+    "Lotofácil é um jogo de azar e não há garantia de premiação."
+)
