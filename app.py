@@ -1,6 +1,4 @@
 import streamlit as st
-import pandas as pd
-import plotly.express as px
 from streamlit.components.v1 import html
 
 from utils import converter_lista
@@ -14,21 +12,17 @@ st.set_page_config(
     layout="centered"
 )
 
-# ================= SESSION STATE (FIX DEFINITIVO) =================
-if "jogos" not in st.session_state:
-    st.session_state.jogos = None
-
-if "classificacao" not in st.session_state:
-    st.session_state.classificacao = None
-
-if "nome_estrategia" not in st.session_state:
-    st.session_state.nome_estrategia = None
-
-if "simulado" not in st.session_state:
-    st.session_state.simulado = None
-
-if "resultado_real" not in st.session_state:
-    st.session_state.resultado_real = None
+# ================= SESSION STATE =================
+for key, default in {
+    "jogos": None,
+    "classificacao": None,
+    "nome_estrategia": None,
+    "simulado": None,
+    "resultado_real": None,
+    "resultado_ativo": False
+}.items():
+    if key not in st.session_state:
+        st.session_state[key] = default
 
 # ================= ESTILO =================
 st.markdown("""
@@ -47,18 +41,12 @@ st.markdown("""
 .neutra {background:#7A1FA2;}
 
 .bloco-jogo {
-    margin-bottom:28px;
-    padding-bottom:20px;
+    margin-bottom:26px;
+    padding-bottom:18px;
     border-bottom:1px solid #2a2a2a;
 }
 
-.badge {
-    padding:4px 12px;
-    border-radius:14px;
-    font-size:12px;
-    color:white;
-    margin-right:6px;
-}
+.badge {padding:4px 12px; border-radius:14px; font-size:12px; color:white;}
 .badge-quente {background:#E53935;}
 .badge-morna {background:#FB8C00;}
 .badge-fria {background:#3949AB;}
@@ -71,51 +59,29 @@ st.markdown("""
     font-size:13px;
     border:none;
     cursor:pointer;
-    margin-top:10px;
-}
-.copy-btn:hover {opacity:0.85;}
-
-.aviso {
-    font-size:12px;
-    color:#999;
-    margin-top:26px;
-    line-height:1.6;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# ================= AVISO SUPERIOR =================
-st.caption("Ferramenta educacional e estatística • Sem vínculo com Loterias Caixa")
-
 # ================= TOPO =================
 st.title("🟣 Lotomilion Estrategista")
-
-st.markdown("""
-Aqui o jogo é **organizado**, pensado pra  
-chegar na **quadra, quina, 13 ou 14 pontos**,  
-sem chute e sem promessa milagrosa.
-""")
+st.caption("Ferramenta educacional e estatística • Sem vínculo com Loterias Caixa")
 
 # ================= PASSO 1 =================
-st.subheader("🧠 Passo 1 — Escolha a Estratégia")
-
+st.subheader("🧠 Passo 1 — Estratégia")
 estrategia = st.radio(
     "",
-    [
-        "🎯 Fechamento 21 (9 fixas + 12 variáveis)",
-        "🔥 Frequencial (quentes e frios)"
-    ],
+    ["🎯 Fechamento 21 (15 dezenas)", "🔥 Frequencial (15 dezenas)"],
     horizontal=True
 )
 
 # ================= PASSO 2 =================
-st.subheader("🎯 Passo 2 — Monte sua base de 21 dezenas")
-
+st.subheader("🎯 Passo 2 — Base de 21 dezenas")
 fixas_txt = st.text_area("🔒 9 dezenas FIXAS")
 variaveis_txt = st.text_area("🔄 12 dezenas VARIÁVEIS")
 
-# ================= PROCESSAMENTO =================
-if st.button("🧠 Gerar Jogos Estratégicos"):
+# ================= GERAR =================
+if st.button("🧠 Gerar Jogos"):
 
     fixas = converter_lista(fixas_txt)
     variaveis = converter_lista(variaveis_txt)
@@ -130,89 +96,75 @@ if st.button("🧠 Gerar Jogos Estratégicos"):
         st.stop()
 
     if "Fechamento" in estrategia:
-        jogos = gerar_fechamento_21_8(dezenas)
-        classificacao = None
-        nome = "Fechamento 21"
+        st.session_state.jogos = gerar_fechamento_21_8(dezenas)
+        st.session_state.classificacao = None
+        st.session_state.nome_estrategia = "Fechamento 21"
     else:
         jogos, classificacao = gerar_jogos_quentes_frios(dezenas)
-        nome = "Quentes e Frios"
+        quentes = classificacao["quentes"]
+        frias = classificacao["frias"]
+        mornas = [n for n in dezenas if n not in quentes and n not in frias]
 
-    st.session_state.jogos = jogos
-    st.session_state.classificacao = classificacao
-    st.session_state.nome_estrategia = nome
-    st.session_state.simulado = None
+        st.session_state.jogos = jogos
+        st.session_state.classificacao = {
+            "quentes": quentes,
+            "mornas": mornas,
+            "frias": frias
+        }
+        st.session_state.nome_estrategia = "Quentes e Frios"
+
     st.session_state.resultado_real = None
+    st.session_state.resultado_ativo = False
 
 # ================= RESULTADOS =================
 if st.session_state.jogos:
 
-    st.subheader("🎲 Passo 3 — Jogos Gerados")
-    st.caption(f"Estratégia ativa: **{st.session_state.nome_estrategia}**")
+    st.subheader("🎲 Passo 3 — Jogos (15 dezenas cada)")
 
-    # ================= RESULTADO REAL =================
-    st.subheader("📥 Resultado Real do Concurso")
+    # ===== RESULTADO REAL =====
+    st.subheader("📥 Resultado Oficial (opcional)")
+    resultado_txt = st.text_input("Digite as 15 dezenas sorteadas")
 
-    resultado_txt = st.text_input(
-        "Digite as 15 dezenas sorteadas",
-        help="Usado apenas para conferência e estudo"
-    )
-
-    if resultado_txt:
+    if st.button("📌 Aplicar Resultado"):
         resultado = converter_lista(resultado_txt)
         if len(resultado) == 15:
             st.session_state.resultado_real = resultado
+            st.session_state.resultado_ativo = True
         else:
-            st.warning("Informe exatamente 15 dezenas do resultado oficial.")
+            st.warning("Informe exatamente 15 dezenas.")
 
+    # ===== JOGOS =====
     for i, jogo in enumerate(st.session_state.jogos, 1):
 
-        st.markdown(f"### Jogo {i}")
+        st.markdown(f"### Jogo {i} — 15 dezenas")
 
-        # GRADE 5x3
         for linha in range(0, 15, 5):
-            cols = st.columns(5, gap="small")
+            cols = st.columns(5)
             for c, n in zip(cols, jogo[linha:linha+5]):
 
                 classe = "neutra"
-
-                if st.session_state.resultado_real:
-                    if n in st.session_state.resultado_real:
+                if st.session_state.classificacao:
+                    if n in st.session_state.classificacao["quentes"]:
                         classe = "quente"
-                    elif st.session_state.classificacao and n in st.session_state.classificacao.get("frias", []):
+                    elif n in st.session_state.classificacao["frias"]:
                         classe = "fria"
                     else:
                         classe = "morna"
 
-                c.markdown(
-                    f"<div class='numero {classe}'>{n:02d}</div>",
-                    unsafe_allow_html=True
-                )
+                c.markdown(f"<div class='numero {classe}'>{n:02d}</div>", unsafe_allow_html=True)
 
-        # COPIAR
-        jogo_txt = " ".join(f"{n:02d}" for n in jogo)
-        html(
-            f"""
-            <button class="copy-btn"
-            onclick="navigator.clipboard.writeText('{jogo_txt}');
-            this.innerText='✅ Copiado!'">
-            📋 Copiar Jogo
-            </button>
-            """,
-            height=45
-        )
-
-        # CONFERÊNCIA
-        if st.session_state.resultado_real:
+        if st.session_state.resultado_ativo:
             acertos = len(set(jogo) & set(st.session_state.resultado_real))
             st.info(f"🎯 {acertos} pontos")
 
-        st.markdown("<div class='bloco-jogo'></div>", unsafe_allow_html=True)
+        html(
+            f"""
+            <button class="copy-btn"
+            onclick="navigator.clipboard.writeText('{" ".join(f"{n:02d}" for n in jogo)}')">
+            📋 Copiar Jogo
+            </button>
+            """,
+            height=40
+        )
 
-# ================= AVISO FINAL =================
-st.markdown("""
-<div class='aviso'>
-Este aplicativo é educacional e estatístico.  
-Não possui vínculo com a Caixa Econômica Federal.  
-A Lotofácil é um jogo de azar e não há garantia de premiação.
-</div>
-""", unsafe_allow_html=True)
+        st.markdown("<div class='bloco-jogo'></div>", unsafe_allow_html=True)
