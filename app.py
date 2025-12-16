@@ -127,12 +127,28 @@ if st.button("🧠 Gerar Jogos Estratégicos"):
     st.session_state.classificacao = classificacao
     st.session_state.nome_estrategia = nome
     st.session_state.simulado = None
+    st.session_state.resultado_real = None
 
 # ================= RESULTADOS =================
 if "jogos" in st.session_state:
 
     st.subheader("🎲 Passo 3 — Jogos Gerados")
     st.caption(f"Estratégia ativa: **{st.session_state.nome_estrategia}**")
+
+    # ================= RESULTADO REAL =================
+    st.subheader("📥 Resultado Real do Concurso")
+
+    resultado_txt = st.text_input(
+        "Digite as 15 dezenas sorteadas",
+        help="Usado apenas para conferência e estudo"
+    )
+
+    if resultado_txt:
+        resultado = converter_lista(resultado_txt)
+        if len(resultado) == 15:
+            st.session_state.resultado_real = resultado
+        else:
+            st.warning("Informe exatamente 15 dezenas do resultado oficial.")
 
     for i, jogo in enumerate(st.session_state.jogos, 1):
 
@@ -155,20 +171,21 @@ if "jogos" in st.session_state:
             for c, n in zip(cols, jogo[linha:linha+5]):
 
                 classe = "neutra"
-                if st.session_state.classificacao:
-                    if n in st.session_state.classificacao["quentes"]:
+
+                if st.session_state.resultado_real:
+                    if n in st.session_state.resultado_real:
                         classe = "quente"
-                    elif n in st.session_state.classificacao["mornas"]:
-                        classe = "morna"
-                    elif n in st.session_state.classificacao["frias"]:
+                    elif st.session_state.classificacao and n in st.session_state.classificacao.get("frias", []):
                         classe = "fria"
+                    else:
+                        classe = "morna"
 
                 c.markdown(
                     f"<div class='numero {classe}'>{n:02d}</div>",
                     unsafe_allow_html=True
                 )
 
-        # BOTÃO COPIAR (FUNCIONAL)
+        # COPIAR JOGO
         jogo_txt = " ".join(f"{n:02d}" for n in jogo)
         html(
             f"""
@@ -180,6 +197,16 @@ if "jogos" in st.session_state:
             """,
             height=50
         )
+
+        # CONFERÊNCIA DE PONTOS
+        if st.session_state.resultado_real:
+            acertos = len(set(jogo) & set(st.session_state.resultado_real))
+            if acertos >= 13:
+                st.success(f"🎯 {acertos} pontos")
+            elif acertos >= 11:
+                st.info(f"📊 {acertos} pontos")
+            else:
+                st.write(f"{acertos} pontos")
 
         st.markdown("<div class='bloco-jogo'></div>", unsafe_allow_html=True)
 
