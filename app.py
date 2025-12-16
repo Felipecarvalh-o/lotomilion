@@ -14,6 +14,22 @@ st.set_page_config(
     layout="centered"
 )
 
+# ================= SESSION STATE (FIX DEFINITIVO) =================
+if "jogos" not in st.session_state:
+    st.session_state.jogos = None
+
+if "classificacao" not in st.session_state:
+    st.session_state.classificacao = None
+
+if "nome_estrategia" not in st.session_state:
+    st.session_state.nome_estrategia = None
+
+if "simulado" not in st.session_state:
+    st.session_state.simulado = None
+
+if "resultado_real" not in st.session_state:
+    st.session_state.resultado_real = None
+
 # ================= ESTILO =================
 st.markdown("""
 <style>
@@ -69,9 +85,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ================= AVISO SUPERIOR =================
-st.caption(
-    "Ferramenta educacional e estatística • Sem vínculo com Loterias Caixa"
-)
+st.caption("Ferramenta educacional e estatística • Sem vínculo com Loterias Caixa")
 
 # ================= TOPO =================
 st.title("🟣 Lotomilion Estrategista")
@@ -130,7 +144,7 @@ if st.button("🧠 Gerar Jogos Estratégicos"):
     st.session_state.resultado_real = None
 
 # ================= RESULTADOS =================
-if "jogos" in st.session_state:
+if st.session_state.jogos:
 
     st.subheader("🎲 Passo 3 — Jogos Gerados")
     st.caption(f"Estratégia ativa: **{st.session_state.nome_estrategia}**")
@@ -154,18 +168,7 @@ if "jogos" in st.session_state:
 
         st.markdown(f"### Jogo {i}")
 
-        # LEGENDA
-        if st.session_state.classificacao:
-            st.markdown(
-                """
-                <span class="badge badge-quente">🔥 Quentes</span>
-                <span class="badge badge-morna">🟠 Mornas</span>
-                <span class="badge badge-fria">❄️ Frias</span>
-                """,
-                unsafe_allow_html=True
-            )
-
-        # GRADE 5x3 COM CORES
+        # GRADE 5x3
         for linha in range(0, 15, 5):
             cols = st.columns(5, gap="small")
             for c, n in zip(cols, jogo[linha:linha+5]):
@@ -185,7 +188,7 @@ if "jogos" in st.session_state:
                     unsafe_allow_html=True
                 )
 
-        # COPIAR JOGO
+        # COPIAR
         jogo_txt = " ".join(f"{n:02d}" for n in jogo)
         html(
             f"""
@@ -195,39 +198,15 @@ if "jogos" in st.session_state:
             📋 Copiar Jogo
             </button>
             """,
-            height=50
+            height=45
         )
 
-        # CONFERÊNCIA DE PONTOS
+        # CONFERÊNCIA
         if st.session_state.resultado_real:
             acertos = len(set(jogo) & set(st.session_state.resultado_real))
-            if acertos >= 13:
-                st.success(f"🎯 {acertos} pontos")
-            elif acertos >= 11:
-                st.info(f"📊 {acertos} pontos")
-            else:
-                st.write(f"{acertos} pontos")
+            st.info(f"🎯 {acertos} pontos")
 
         st.markdown("<div class='bloco-jogo'></div>", unsafe_allow_html=True)
-
-    # ================= SIMULAÇÃO =================
-    st.subheader("🧪 Simulação Estatística")
-    st.caption(
-        "Cada clique gera novos sorteios aleatórios. "
-        "Variação é normal — isso é estatística real."
-    )
-
-    if st.button("▶️ Simular 500 sorteios"):
-        st.session_state.simulado = simular_cenario(st.session_state.jogos)
-
-    if st.session_state.simulado:
-        r = st.session_state.simulado
-        c1, c2, c3, c4 = st.columns(4)
-
-        c1.metric("📊 Média", r["media"])
-        c2.metric("🏆 Máximo", r["maximo"])
-        c3.metric("❌ Zerou", r["zeros"])
-        c4.metric("🔢 Sorteios", r["total"])
 
 # ================= AVISO FINAL =================
 st.markdown("""
