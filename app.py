@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+from streamlit.components.v1 import html
 
 from utils import converter_lista
 from engine import gerar_fechamento_21_8, gerar_jogos_quentes_frios
@@ -17,19 +18,24 @@ st.set_page_config(
 st.markdown("""
 <style>
 .numero {
-    background:#7A1FA2;
-    color:white;
     padding:14px;
     border-radius:16px;
     font-size:16px;
     font-weight:700;
     text-align:center;
+    color:white;
 }
+.quente {background:#E53935;}
+.morna {background:#FB8C00;}
+.fria {background:#3949AB;}
+.neutra {background:#7A1FA2;}
+
 .bloco-jogo {
     margin-bottom:28px;
     padding-bottom:20px;
     border-bottom:1px solid #2a2a2a;
 }
+
 .badge {
     padding:4px 12px;
     border-radius:14px;
@@ -64,8 +70,7 @@ st.markdown("""
 
 # ================= AVISO SUPERIOR =================
 st.caption(
-    "Ferramenta educacional e estatística • "
-    "Sem vínculo com Loterias Caixa"
+    "Ferramenta educacional e estatística • Sem vínculo com Loterias Caixa"
 )
 
 # ================= TOPO =================
@@ -92,15 +97,8 @@ estrategia = st.radio(
 # ================= PASSO 2 =================
 st.subheader("🎯 Passo 2 — Monte sua base de 21 dezenas")
 
-fixas_txt = st.text_area(
-    "🔒 9 dezenas FIXAS",
-    help="Essas entram em todos os jogos"
-)
-
-variaveis_txt = st.text_area(
-    "🔄 12 dezenas VARIÁVEIS",
-    help="Essas fazem a rotação do jogo"
-)
+fixas_txt = st.text_area("🔒 9 dezenas FIXAS")
+variaveis_txt = st.text_area("🔄 12 dezenas VARIÁVEIS")
 
 # ================= PROCESSAMENTO =================
 if st.button("🧠 Gerar Jogos Estratégicos"):
@@ -119,14 +117,15 @@ if st.button("🧠 Gerar Jogos Estratégicos"):
 
     if "Fechamento" in estrategia:
         jogos = gerar_fechamento_21_8(dezenas)
-        st.session_state.nome_estrategia = "Fechamento 21"
-        st.session_state.classificacao = None
+        classificacao = None
+        nome = "Fechamento 21"
     else:
         jogos, classificacao = gerar_jogos_quentes_frios(dezenas)
-        st.session_state.nome_estrategia = "Quentes e Frios"
-        st.session_state.classificacao = classificacao
+        nome = "Quentes e Frios"
 
     st.session_state.jogos = jogos
+    st.session_state.classificacao = classificacao
+    st.session_state.nome_estrategia = nome
     st.session_state.simulado = None
 
 # ================= RESULTADOS =================
@@ -139,8 +138,8 @@ if "jogos" in st.session_state:
 
         st.markdown(f"### Jogo {i}")
 
-        # BADGES VISUAIS
-        if st.session_state.nome_estrategia == "Quentes e Frios":
+        # LEGENDA
+        if st.session_state.classificacao:
             st.markdown(
                 """
                 <span class="badge badge-quente">🔥 Quentes</span>
@@ -150,25 +149,36 @@ if "jogos" in st.session_state:
                 unsafe_allow_html=True
             )
 
-        # GRADE 5x3
+        # GRADE 5x3 COM CORES
         for linha in range(0, 15, 5):
             cols = st.columns(5, gap="small")
             for c, n in zip(cols, jogo[linha:linha+5]):
+
+                classe = "neutra"
+                if st.session_state.classificacao:
+                    if n in st.session_state.classificacao["quentes"]:
+                        classe = "quente"
+                    elif n in st.session_state.classificacao["mornas"]:
+                        classe = "morna"
+                    elif n in st.session_state.classificacao["frias"]:
+                        classe = "fria"
+
                 c.markdown(
-                    f"<div class='numero'>{n:02d}</div>",
+                    f"<div class='numero {classe}'>{n:02d}</div>",
                     unsafe_allow_html=True
                 )
 
-        # BOTÃO COPIAR
+        # BOTÃO COPIAR (FUNCIONAL)
         jogo_txt = " ".join(f"{n:02d}" for n in jogo)
-        st.markdown(
+        html(
             f"""
             <button class="copy-btn"
-            onclick="navigator.clipboard.writeText('{jogo_txt}')">
+            onclick="navigator.clipboard.writeText('{jogo_txt}');
+            this.innerText='✅ Copiado!'">
             📋 Copiar Jogo
             </button>
             """,
-            unsafe_allow_html=True
+            height=50
         )
 
         st.markdown("<div class='bloco-jogo'></div>", unsafe_allow_html=True)
@@ -177,7 +187,7 @@ if "jogos" in st.session_state:
     st.subheader("🧪 Simulação Estatística")
     st.caption(
         "Cada clique gera novos sorteios aleatórios. "
-        "Por isso a média pode variar — isso é normal e esperado."
+        "Variação é normal — isso é estatística real."
     )
 
     if st.button("▶️ Simular 500 sorteios"):
@@ -195,9 +205,8 @@ if "jogos" in st.session_state:
 # ================= AVISO FINAL =================
 st.markdown("""
 <div class='aviso'>
-Este aplicativo é uma ferramenta educacional e estatística.  
-Não possui vínculo com a Caixa Econômica Federal ou Loterias Caixa.  
-A Lotofácil é um jogo de azar e não há garantia de premiação,
-incluindo 13, 14 ou 15 pontos.
+Este aplicativo é educacional e estatístico.  
+Não possui vínculo com a Caixa Econômica Federal.  
+A Lotofácil é um jogo de azar e não há garantia de premiação.
 </div>
 """, unsafe_allow_html=True)
