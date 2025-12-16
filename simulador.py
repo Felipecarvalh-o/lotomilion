@@ -1,34 +1,21 @@
-import random
-
-
-def simular_cenario(jogos, total_sorteios=500):
+def converter_lista(texto):
     """
-    Simula sorteios aleatórios da Lotofácil (15 dezenas entre 1 e 25)
-    e observa o melhor desempenho dos jogos gerados.
+    Converte uma string de dezenas em lista de inteiros.
+    Aceita espaços, vírgulas ou hífen.
     """
+    if not texto:
+        return []
 
-    resultados = []
-    zeros = 0
-    maximo = 0
+    texto = texto.replace(",", " ").replace("-", " ")
+    partes = texto.split()
 
-    for _ in range(total_sorteios):
-        sorteio = set(random.sample(range(1, 26), 15))
-        melhor = 0
+    dezenas = []
+    for p in partes:
+        try:
+            n = int(p)
+            if 1 <= n <= 25:
+                dezenas.append(n)
+        except ValueError:
+            pass
 
-        for jogo in jogos:
-            pontos = len(sorteio & set(jogo))
-            melhor = max(melhor, pontos)
-
-        resultados.append(melhor)
-        if melhor == 0:
-            zeros += 1
-        maximo = max(maximo, melhor)
-
-    media = round(sum(resultados) / len(resultados), 2)
-
-    return {
-        "media": media,
-        "maximo": maximo,
-        "zeros": zeros,
-        "total": total_sorteios
-    }
+    return sorted(set(dezenas))
