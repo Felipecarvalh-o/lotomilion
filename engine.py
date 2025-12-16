@@ -2,15 +2,18 @@ from itertools import combinations
 import random
 from collections import Counter
 
-
 # ================================
-# FECHAMENTO 21 → 8 JOGOS DE 15
+# ESTRATÉGIA PRINCIPAL
+# Fechamento 21 dezenas → 8 jogos
 # ================================
 def gerar_fechamento_21_8(dezenas_21):
     dezenas = sorted(set(dezenas_21))
 
     if len(dezenas) != 21:
         raise ValueError("Informe exatamente 21 dezenas.")
+
+    if any(n < 1 or n > 25 for n in dezenas):
+        raise ValueError("As dezenas devem estar entre 1 e 25.")
 
     fixas = dezenas[:9]
     variaveis = dezenas[9:]
@@ -29,7 +32,7 @@ def gerar_fechamento_21_8(dezenas_21):
 
 
 # =========================================
-# QUENTES / MORNAS / FRIAS (15 dezenas)
+# ESTRATÉGIA FREQUENCIAL (QUENTES / MORNAS / FRIAS)
 # =========================================
 def gerar_jogos_quentes_frios(dezenas_21, total_jogos=8):
     dezenas = sorted(set(dezenas_21))
