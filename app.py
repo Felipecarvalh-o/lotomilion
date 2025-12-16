@@ -26,53 +26,46 @@ st.markdown("""
     text-align:center;
 }
 .bloco-jogo {
-    margin-bottom:26px;
-    padding-bottom:18px;
-    border-bottom:1px solid #333;
+    margin-bottom:28px;
+    padding-bottom:20px;
+    border-bottom:1px solid #2a2a2a;
 }
-.badge-quente {
-    background:#E53935;
-    color:white;
-    padding:4px 10px;
-    border-radius:12px;
+.badge {
+    padding:4px 12px;
+    border-radius:14px;
     font-size:12px;
-}
-.badge-morna {
-    background:#FB8C00;
     color:white;
-    padding:4px 10px;
-    border-radius:12px;
-    font-size:12px;
+    margin-right:6px;
 }
-.badge-fria {
-    background:#3949AB;
-    color:white;
-    padding:4px 10px;
-    border-radius:12px;
-    font-size:12px;
-}
+.badge-quente {background:#E53935;}
+.badge-morna {background:#FB8C00;}
+.badge-fria {background:#3949AB;}
+
 .copy-btn {
     background:#9C27B0;
     color:white;
-    padding:6px 14px;
-    border-radius:18px;
+    padding:7px 18px;
+    border-radius:20px;
     font-size:13px;
     border:none;
     cursor:pointer;
+    margin-top:10px;
 }
+.copy-btn:hover {opacity:0.85;}
+
 .aviso {
     font-size:12px;
     color:#999;
-    margin-top:22px;
-    line-height:1.5;
+    margin-top:26px;
+    line-height:1.6;
 }
 </style>
 """, unsafe_allow_html=True)
 
 # ================= AVISO SUPERIOR =================
 st.caption(
-    "Ferramenta educacional e estatística. "
-    "Sem vínculo com Loterias Caixa."
+    "Ferramenta educacional e estatística • "
+    "Sem vínculo com Loterias Caixa"
 )
 
 # ================= TOPO =================
@@ -84,8 +77,8 @@ chegar na **quadra, quina, 13 ou 14 pontos**,
 sem chute e sem promessa milagrosa.
 """)
 
-# ================= ESTRATÉGIA =================
-st.subheader("🧠 Estratégia")
+# ================= PASSO 1 =================
+st.subheader("🧠 Passo 1 — Escolha a Estratégia")
 
 estrategia = st.radio(
     "",
@@ -96,11 +89,18 @@ estrategia = st.radio(
     horizontal=True
 )
 
-# ================= ENTRADA =================
-st.subheader("🎯 Monte sua base de 21 dezenas")
+# ================= PASSO 2 =================
+st.subheader("🎯 Passo 2 — Monte sua base de 21 dezenas")
 
-fixas_txt = st.text_area("🔒 9 dezenas FIXAS")
-variaveis_txt = st.text_area("🔄 12 dezenas VARIÁVEIS")
+fixas_txt = st.text_area(
+    "🔒 9 dezenas FIXAS",
+    help="Essas entram em todos os jogos"
+)
+
+variaveis_txt = st.text_area(
+    "🔄 12 dezenas VARIÁVEIS",
+    help="Essas fazem a rotação do jogo"
+)
 
 # ================= PROCESSAMENTO =================
 if st.button("🧠 Gerar Jogos Estratégicos"):
@@ -120,10 +120,11 @@ if st.button("🧠 Gerar Jogos Estratégicos"):
     if "Fechamento" in estrategia:
         jogos = gerar_fechamento_21_8(dezenas)
         st.session_state.nome_estrategia = "Fechamento 21"
+        st.session_state.classificacao = None
     else:
         jogos, classificacao = gerar_jogos_quentes_frios(dezenas)
-        st.session_state.classificacao = classificacao
         st.session_state.nome_estrategia = "Quentes e Frios"
+        st.session_state.classificacao = classificacao
 
     st.session_state.jogos = jogos
     st.session_state.simulado = None
@@ -131,21 +132,25 @@ if st.button("🧠 Gerar Jogos Estratégicos"):
 # ================= RESULTADOS =================
 if "jogos" in st.session_state:
 
-    st.subheader("🎲 Jogos Gerados")
+    st.subheader("🎲 Passo 3 — Jogos Gerados")
     st.caption(f"Estratégia ativa: **{st.session_state.nome_estrategia}**")
 
     for i, jogo in enumerate(st.session_state.jogos, 1):
 
         st.markdown(f"### Jogo {i}")
 
-        # BADGES
+        # BADGES VISUAIS
         if st.session_state.nome_estrategia == "Quentes e Frios":
-            badges = st.columns(3)
-            badges[0].markdown("<span class='badge-quente'>🔥 Quentes</span>", unsafe_allow_html=True)
-            badges[1].markdown("<span class='badge-morna'>🟠 Mornas</span>", unsafe_allow_html=True)
-            badges[2].markdown("<span class='badge-fria'>❄️ Frias</span>", unsafe_allow_html=True)
+            st.markdown(
+                """
+                <span class="badge badge-quente">🔥 Quentes</span>
+                <span class="badge badge-morna">🟠 Mornas</span>
+                <span class="badge badge-fria">❄️ Frias</span>
+                """,
+                unsafe_allow_html=True
+            )
 
-        # GRADE 5x3 (mobile-friendly)
+        # GRADE 5x3
         for linha in range(0, 15, 5):
             cols = st.columns(5, gap="small")
             for c, n in zip(cols, jogo[linha:linha+5]):
@@ -154,7 +159,7 @@ if "jogos" in st.session_state:
                     unsafe_allow_html=True
                 )
 
-        # BOTÃO COPIAR (JS NATIVO)
+        # BOTÃO COPIAR
         jogo_txt = " ".join(f"{n:02d}" for n in jogo)
         st.markdown(
             f"""
@@ -171,8 +176,8 @@ if "jogos" in st.session_state:
     # ================= SIMULAÇÃO =================
     st.subheader("🧪 Simulação Estatística")
     st.caption(
-        "Cada clique simula novos sorteios aleatórios. "
-        "Por isso a média muda — isso é normal."
+        "Cada clique gera novos sorteios aleatórios. "
+        "Por isso a média pode variar — isso é normal e esperado."
     )
 
     if st.button("▶️ Simular 500 sorteios"):
@@ -190,9 +195,9 @@ if "jogos" in st.session_state:
 # ================= AVISO FINAL =================
 st.markdown("""
 <div class='aviso'>
-Este app não garante prêmios.  
-Lotofácil é um jogo de azar.  
-Aqui o foco é **estatística, organização e estudo** —
-não promessa de quadra, quina ou 14 pontos.
+Este aplicativo é uma ferramenta educacional e estatística.  
+Não possui vínculo com a Caixa Econômica Federal ou Loterias Caixa.  
+A Lotofácil é um jogo de azar e não há garantia de premiação,
+incluindo 13, 14 ou 15 pontos.
 </div>
 """, unsafe_allow_html=True)
