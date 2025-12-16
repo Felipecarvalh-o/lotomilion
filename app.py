@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import pyperclip
 
 from utils import converter_lista
 from engine import gerar_fechamento_21_8, gerar_jogos_quentes_frios
@@ -14,7 +13,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# ================= ESTILO GLOBAL =================
+# ================= ESTILO =================
 st.markdown("""
 <style>
 .numero {
@@ -28,17 +27,38 @@ st.markdown("""
 }
 .bloco-jogo {
     margin-bottom:26px;
-    padding-bottom:16px;
+    padding-bottom:18px;
     border-bottom:1px solid #333;
+}
+.badge-quente {
+    background:#E53935;
+    color:white;
+    padding:4px 10px;
+    border-radius:12px;
+    font-size:12px;
+}
+.badge-morna {
+    background:#FB8C00;
+    color:white;
+    padding:4px 10px;
+    border-radius:12px;
+    font-size:12px;
+}
+.badge-fria {
+    background:#3949AB;
+    color:white;
+    padding:4px 10px;
+    border-radius:12px;
+    font-size:12px;
 }
 .copy-btn {
     background:#9C27B0;
     color:white;
     padding:6px 14px;
-    border-radius:20px;
+    border-radius:18px;
     font-size:13px;
-    text-align:center;
-    margin-top:6px;
+    border:none;
+    cursor:pointer;
 }
 .aviso {
     font-size:12px;
@@ -49,10 +69,10 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ================= AVISO JURÍDICO SUPERIOR =================
+# ================= AVISO SUPERIOR =================
 st.caption(
     "Ferramenta educacional e estatística. "
-    "Sem vínculo com Loterias Caixa ou órgãos oficiais."
+    "Sem vínculo com Loterias Caixa."
 )
 
 # ================= TOPO =================
@@ -61,33 +81,26 @@ st.title("🟣 Lotomilion Estrategista")
 st.markdown("""
 Aqui o jogo é **organizado**, pensado pra  
 chegar na **quadra, quina, 13 ou 14 pontos**,  
-sem chute, sem milagre e sem promessa vazia.
+sem chute e sem promessa milagrosa.
 """)
 
-# ================= ESTRATÉGIAS =================
-st.subheader("🧠 Escolha a Estratégia")
+# ================= ESTRATÉGIA =================
+st.subheader("🧠 Estratégia")
 
 estrategia = st.radio(
     "",
     [
-        "🎯 Fechamento 21 dezenas (9 fixas + 12 variáveis)",
+        "🎯 Fechamento 21 (9 fixas + 12 variáveis)",
         "🔥 Frequencial (quentes e frios)"
     ],
     horizontal=True
 )
 
-# ================= ENTRADAS =================
-st.subheader("📌 Monte sua base de dezenas")
+# ================= ENTRADA =================
+st.subheader("🎯 Monte sua base de 21 dezenas")
 
-fixas_txt = st.text_area(
-    "🔒 9 dezenas FIXAS (as que você confia)",
-    help="Essas entram em todos os jogos"
-)
-
-variaveis_txt = st.text_area(
-    "🔄 12 dezenas VARIÁVEIS (pra rodar o jogo)",
-    help="Essas fazem a rotação"
-)
+fixas_txt = st.text_area("🔒 9 dezenas FIXAS")
+variaveis_txt = st.text_area("🔄 12 dezenas VARIÁVEIS")
 
 # ================= PROCESSAMENTO =================
 if st.button("🧠 Gerar Jogos Estratégicos"):
@@ -101,15 +114,16 @@ if st.button("🧠 Gerar Jogos Estratégicos"):
 
     dezenas = sorted(set(fixas + variaveis))
     if len(dezenas) != 21:
-        st.error("Não repita dezenas entre fixas e variáveis.")
+        st.error("Não repita dezenas.")
         st.stop()
 
     if "Fechamento" in estrategia:
         jogos = gerar_fechamento_21_8(dezenas)
-        st.session_state.estrategia_nome = "Fechamento 21"
+        st.session_state.nome_estrategia = "Fechamento 21"
     else:
-        jogos = gerar_jogos_quentes_frios(dezenas)
-        st.session_state.estrategia_nome = "Frequencial"
+        jogos, classificacao = gerar_jogos_quentes_frios(dezenas)
+        st.session_state.classificacao = classificacao
+        st.session_state.nome_estrategia = "Quentes e Frios"
 
     st.session_state.jogos = jogos
     st.session_state.simulado = None
@@ -117,14 +131,21 @@ if st.button("🧠 Gerar Jogos Estratégicos"):
 # ================= RESULTADOS =================
 if "jogos" in st.session_state:
 
-    st.subheader(f"🎲 Jogos Gerados ({len(st.session_state.jogos)} bilhetes)")
-    st.caption(f"Estratégia ativa: **{st.session_state.estrategia_nome}**")
+    st.subheader("🎲 Jogos Gerados")
+    st.caption(f"Estratégia ativa: **{st.session_state.nome_estrategia}**")
 
     for i, jogo in enumerate(st.session_state.jogos, 1):
 
         st.markdown(f"### Jogo {i}")
 
-        # Grade 5x3 (melhor pra mobile)
+        # BADGES
+        if st.session_state.nome_estrategia == "Quentes e Frios":
+            badges = st.columns(3)
+            badges[0].markdown("<span class='badge-quente'>🔥 Quentes</span>", unsafe_allow_html=True)
+            badges[1].markdown("<span class='badge-morna'>🟠 Mornas</span>", unsafe_allow_html=True)
+            badges[2].markdown("<span class='badge-fria'>❄️ Frias</span>", unsafe_allow_html=True)
+
+        # GRADE 5x3 (mobile-friendly)
         for linha in range(0, 15, 5):
             cols = st.columns(5, gap="small")
             for c, n in zip(cols, jogo[linha:linha+5]):
@@ -133,19 +154,25 @@ if "jogos" in st.session_state:
                     unsafe_allow_html=True
                 )
 
-        # BOTÃO COPIAR
+        # BOTÃO COPIAR (JS NATIVO)
         jogo_txt = " ".join(f"{n:02d}" for n in jogo)
-        if st.button(f"📋 Copiar Jogo {i}", key=f"copy_{i}"):
-            pyperclip.copy(jogo_txt)
-            st.success("Jogo copiado!")
+        st.markdown(
+            f"""
+            <button class="copy-btn"
+            onclick="navigator.clipboard.writeText('{jogo_txt}')">
+            📋 Copiar Jogo
+            </button>
+            """,
+            unsafe_allow_html=True
+        )
 
         st.markdown("<div class='bloco-jogo'></div>", unsafe_allow_html=True)
 
     # ================= SIMULAÇÃO =================
     st.subheader("🧪 Simulação Estatística")
     st.caption(
-        "Cada clique gera novos sorteios aleatórios. "
-        "Por isso a média pode variar — isso é normal e esperado."
+        "Cada clique simula novos sorteios aleatórios. "
+        "Por isso a média muda — isso é normal."
     )
 
     if st.button("▶️ Simular 500 sorteios"):
@@ -155,17 +182,17 @@ if "jogos" in st.session_state:
         r = st.session_state.simulado
         c1, c2, c3, c4 = st.columns(4)
 
-        c1.metric("📊 Média de acertos", r["media"])
-        c2.metric("🏆 Melhor cenário", r["maximo"])
+        c1.metric("📊 Média", r["media"])
+        c2.metric("🏆 Máximo", r["maximo"])
         c3.metric("❌ Zerou", r["zeros"])
         c4.metric("🔢 Sorteios", r["total"])
 
 # ================= AVISO FINAL =================
 st.markdown("""
 <div class='aviso'>
-Este aplicativo não garante prêmios.  
+Este app não garante prêmios.  
 Lotofácil é um jogo de azar.  
-O objetivo aqui é **organizar o jogo, estudar padrões e reduzir o chute** —
-não prometer quadra, quina ou 14 pontos.
+Aqui o foco é **estatística, organização e estudo** —
+não promessa de quadra, quina ou 14 pontos.
 </div>
 """, unsafe_allow_html=True)
