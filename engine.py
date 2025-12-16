@@ -8,15 +8,20 @@ from collections import Counter
 # Fechamento 21 dezenas → 8 jogos
 # ================================
 def gerar_fechamento_21_8(dezenas_21):
-    if len(dezenas_21) != 21:
-        raise ValueError("Informe exatamente 21 dezenas.")
+    """
+    Fechamento educacional:
+    21 dezenas → 8 jogos de 15
+    Modelo clássico (9 fixas + 12 variáveis)
+    """
 
     dezenas = sorted(set(dezenas_21))
+
+    if len(dezenas) != 21:
+        raise ValueError("Informe exatamente 21 dezenas sem repetição.")
 
     if any(n < 1 or n > 25 for n in dezenas):
         raise ValueError("As dezenas devem estar entre 1 e 25.")
 
-    # 9 fixas + 12 variáveis (modelo educacional)
     fixas = dezenas[:9]
     variaveis = dezenas[9:]
 
@@ -26,8 +31,7 @@ def gerar_fechamento_21_8(dezenas_21):
 
     for combo in combinacoes:
         jogo = sorted(fixas + list(combo))
-        if len(jogo) == 15:
-            jogos.append(jogo)
+        jogos.append(jogo)
 
         if len(jogos) == 8:
             break
@@ -38,26 +42,40 @@ def gerar_fechamento_21_8(dezenas_21):
 # =========================================
 # ESTRATÉGIA FREQUENCIAL (QUENTES & FRIOS)
 # =========================================
-def gerar_jogos_quentes_frios(historico, total_jogos=8):
+def gerar_jogos_quentes_frios(dezenas_21, total_jogos=8):
     """
-    Gera jogos balanceados usando dezenas mais e menos frequentes
+    Estratégia educacional de Quentes & Frios
+
+    Usa APENAS as dezenas escolhidas pelo usuário,
+    simulando uma leitura frequencial (sem histórico real).
     """
-    contador = Counter()
 
-    for sorteio in historico:
-        contador.update(sorteio)
+    dezenas = sorted(set(dezenas_21))
 
-    dezenas_ordenadas = [n for n, _ in contador.most_common()]
+    if len(dezenas) != 21:
+        raise ValueError("Informe exatamente 21 dezenas.")
 
-    quentes = dezenas_ordenadas[:12]
-    frios = dezenas_ordenadas[-12:]
+    # Simula pesos frequenciais (educacional)
+    pesos = []
+    for n in dezenas:
+        pesos.extend([n] * random.randint(1, 5))
+
+    contador = Counter(pesos)
+
+    ordenadas = [n for n, _ in contador.most_common()]
+
+    quentes = ordenadas[:12]
+    frias = ordenadas[-12:]
 
     jogos = []
 
     for _ in range(total_jogos):
         jogo = set()
         jogo.update(random.sample(quentes, 8))
-        jogo.update(random.sample(frios, 7))
+        jogo.update(random.sample(frias, 7))
         jogos.append(sorted(jogo))
 
-    return jogos
+    return jogos, {
+        "quentes": quentes,
+        "frias": frias
+    }
