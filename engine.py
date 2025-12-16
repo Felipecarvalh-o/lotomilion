@@ -2,18 +2,15 @@ from itertools import combinations
 import random
 from collections import Counter
 
+
 # ================================
-# ESTRATÉGIA PRINCIPAL
-# Fechamento 21 dezenas → 8 jogos
+# FECHAMENTO 21 → 8 JOGOS DE 15
 # ================================
 def gerar_fechamento_21_8(dezenas_21):
     dezenas = sorted(set(dezenas_21))
 
     if len(dezenas) != 21:
-        raise ValueError("Informe exatamente 21 dezenas sem repetição.")
-
-    if any(n < 1 or n > 25 for n in dezenas):
-        raise ValueError("As dezenas devem estar entre 1 e 25.")
+        raise ValueError("Informe exatamente 21 dezenas.")
 
     fixas = dezenas[:9]
     variaveis = dezenas[9:]
@@ -32,7 +29,7 @@ def gerar_fechamento_21_8(dezenas_21):
 
 
 # =========================================
-# ESTRATÉGIA FREQUENCIAL (QUENTE / MORNA / FRIA)
+# QUENTES • MORNAS • FRIAS (15 dezenas)
 # =========================================
 def gerar_jogos_quentes_frios(dezenas_21, total_jogos=8):
     dezenas = sorted(set(dezenas_21))
@@ -40,7 +37,7 @@ def gerar_jogos_quentes_frios(dezenas_21, total_jogos=8):
     if len(dezenas) != 21:
         raise ValueError("Informe exatamente 21 dezenas.")
 
-    # Simulação educacional de frequência
+    # Simulação frequencial educacional
     pesos = []
     for n in dezenas:
         pesos.extend([n] * random.randint(1, 6))
@@ -53,7 +50,6 @@ def gerar_jogos_quentes_frios(dezenas_21, total_jogos=8):
     frias = ordenadas[14:]
 
     jogos = []
-
     for _ in range(total_jogos):
         jogo = set()
         jogo.update(random.sample(quentes, 5))
