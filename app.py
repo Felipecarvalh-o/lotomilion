@@ -107,18 +107,38 @@ if st.button("🧠 Gerar Jogos"):
         st.error("Não repita dezenas.")
         st.stop()
 
+    # ===============================
+    # FECHAMENTO 21
+    # ===============================
     if "Fechamento" in estrategia:
         st.session_state.jogos = gerar_fechamento_21_8(dezenas)
         st.session_state.classificacao = None
         st.session_state.nome_estrategia = "Fechamento 21"
-    else:
+
+    # ===============================
+    # FREQUENCIAL SIMULADO
+    # ===============================
+    elif "Frequencial" in estrategia:
         jogos, classificacao = gerar_jogos_quentes_frios(dezenas)
         st.session_state.jogos = jogos
         st.session_state.classificacao = classificacao
         st.session_state.nome_estrategia = "Quentes e Frios"
 
-    st.session_state.resultado_real = None
-    st.session_state.resultado_ativo = False
+    # ===============================
+    # HISTÓRICO REAL (GITHUB)
+    # ===============================
+    elif "Histórico" in estrategia:
+        historico = carregar_historico(qtd=50)
+
+        jogos, classificacao = gerar_jogos_historico_real(
+            dezenas,
+            historico
+        )
+
+        st.session_state.jogos = jogos
+        st.session_state.classificacao = classificacao
+        st.session_state.nome_estrategia
+
 
 # ================= RESULTADOS =================
 if st.session_state.jogos:
@@ -197,5 +217,6 @@ Não possui vínculo com a Caixa Econômica Federal.
 A Lotofácil é um jogo de azar e não há garantia de premiação.
 </div>
 """, unsafe_allow_html=True)
+
 
 
