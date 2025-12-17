@@ -163,3 +163,45 @@ def _atualizar_ranking(usuario, pontuacao):
 
 def gerar_ranking():
     return _ler_json(ARQ_RANKING)
+from collections import Counter
+import random
+
+# ======================================================
+# HISTÓRICO REAL AUTOMÁTICO (SEM INPUT DO USUÁRIO)
+# ======================================================
+def gerar_historico_21_automatico(historico, total_jogos=8):
+    """
+    Analisa concursos reais da Lotofácil
+    e gera jogos automaticamente com base
+    nas 21 dezenas mais frequentes.
+    """
+
+    contador = Counter()
+
+    # Conta frequência geral
+    for concurso in historico:
+        for n in concurso.get("numeros", []):
+            contador[n] += 1
+
+    # Seleciona as 21 dezenas mais frequentes
+    dezenas_21 = [n for n, _ in contador.most_common(21)]
+
+    # Classificação estatística
+    quentes = dezenas_21[:7]
+    mornas = dezenas_21[7:14]
+    frias = dezenas_21[14:21]
+
+    jogos = []
+    for _ in range(total_jogos):
+        jogo = set()
+        jogo.update(random.sample(quentes, 5))
+        jogo.update(random.sample(mornas, 5))
+        jogo.update(random.sample(frias, 5))
+        jogos.append(sorted(jogo))
+
+    return jogos, {
+        "quentes": quentes,
+        "mornas": mornas,
+        "frias": frias
+    }
+
