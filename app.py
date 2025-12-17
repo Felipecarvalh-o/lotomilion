@@ -1,7 +1,8 @@
 from data.lotofacil_historico import carregar_historico
-from engine import gerar_fechamento_21_8, gerar_jogos_historico_real, gerar_historico_21_automatico
+from engine import gerar_fechamento_21_8, gerar_historico_21_automatico
 from simulador import simular_cenario
 from utils import converter_lista
+from auth import verificar_usuario
 
 import streamlit as st
 
@@ -12,7 +13,64 @@ st.set_page_config(
     layout="centered"
 )
 
-# ================= SESSION STATE =================
+# ================= LOGIN STATE =================
+if "logado" not in st.session_state:
+    st.session_state.logado = False
+    st.session_state.email = None
+
+# ================= LOGIN PREMIUM =================
+if not st.session_state.logado:
+    st.markdown("""
+    <style>
+    .login-box {
+        background:#0F0F0F;
+        padding:30px;
+        border-radius:22px;
+        border:1px solid #2A0934;
+        max-width:420px;
+        margin:auto;
+        text-align:center;
+    }
+    .login-title {
+        font-size:26px;
+        font-weight:800;
+        color:#9C27B0;
+        margin-bottom:10px;
+    }
+    .login-sub {
+        color:#AAA;
+        font-size:14px;
+        margin-bottom:20px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div class="login-box">
+        <div class="login-title">🔐 Acesso Premium</div>
+        <div class="login-sub">
+            Entre com o <b>email usado na compra</b><br>
+            para acessar o Lotomilion Estrategista
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    email = st.text_input("📧 Email da compra")
+
+    if st.button("🚀 Entrar no sistema", use_container_width=True):
+        ok, resultado = verificar_usuario(email)
+
+        if not ok:
+            st.error(resultado)
+            st.stop()
+
+        st.session_state.logado = True
+        st.session_state.email = email
+        st.rerun()
+
+    st.stop()
+
+# ================= SESSION STATE APP =================
 defaults = {
     "estrategia": None,
     "jogos": None,
@@ -67,9 +125,9 @@ st.markdown("""
 
 # ================= TOPO =================
 st.title("🟣 Lotomilion Estrategista")
-st.caption("Ferramenta educacional e estatística • Sem vínculo com Loterias Caixa")
+st.caption(f"🔐 Acesso ativo • {st.session_state.email}")
 
-# ================= MENU DE ESTRATÉGIA =================
+# ================= MENU =================
 if not st.session_state.estrategia:
     st.subheader("🎯 Escolha a Estratégia")
 
@@ -81,7 +139,7 @@ if not st.session_state.estrategia:
             st.rerun()
 
     with c2:
-        if st.button("📊 Histórico Real (Automático)", use_container_width=True):
+        if st.button("📊 Histórico Real Automático", use_container_width=True):
             st.session_state.estrategia = "historico"
             st.session_state.nome_estrategia = "Histórico Real"
             st.rerun()
@@ -98,9 +156,9 @@ if st.session_state.estrategia:
             st.session_state[k] = defaults[k]
         st.rerun()
 
-    # ================= RESULTADO OFICIAL =================
+    # ================= RESULTADO =================
     st.subheader("📥 Resultado Oficial (opcional)")
-    resultado_txt = st.text_input("Informe o resultado do sorteio (15 dezenas)")
+    resultado_txt = st.text_input("Resultado do sorteio (15 dezenas)")
 
     if st.button("📊 Ativar Comparação"):
         resultado = converter_lista(resultado_txt)
@@ -110,43 +168,37 @@ if st.session_state.estrategia:
         else:
             st.warning("Informe exatamente 15 dezenas.")
 
-    # ================= FECHAMENTO 21 =================
+    # ================= FECHAMENTO =================
     if st.session_state.estrategia == "fechamento":
         st.subheader("🧩 Base de 21 dezenas")
-        fixas_txt = st.text_area("🔒 9 dezenas FIXAS")
-        variaveis_txt = st.text_area("🔄 12 dezenas VARIÁVEIS")
+        fixas_txt = st.text_area("🔒 9 FIXAS")
+        variaveis_txt = st.text_area("🔄 12 VARIÁVEIS")
 
         if st.button("🧠 Gerar Jogos"):
-            fixas = converter_lista(fixas_txt)
-            variaveis = converter_lista(variaveis_txt)
-
-            dezenas = sorted(set(fixas + variaveis))
+            dezenas = sorted(set(converter_lista(fixas_txt) + converter_lista(variaveis_txt)))
             if len(dezenas) != 21:
                 st.error("Use exatamente 21 dezenas.")
                 st.stop()
 
             jogos = gerar_fechamento_21_8(dezenas)
-
             st.session_state.jogos = jogos
-            st.session_state.classificacao = None
             st.session_state.resumo_simulacao = simular_cenario(jogos)
 
-    # ================= HISTÓRICO REAL AUTOMÁTICO =================
+    # ================= HISTÓRICO =================
     if st.session_state.estrategia == "historico":
         if st.button("🧠 Analisar histórico e gerar jogos"):
             historico = carregar_historico(qtd=50)
-
             jogos, classificacao = gerar_historico_21_automatico(historico)
 
             st.session_state.jogos = jogos
             st.session_state.classificacao = classificacao
             st.session_state.resumo_simulacao = simular_cenario(jogos)
 
-# ================= PAINEL PREMIUM =================
+# ================= PAINEL =================
 if st.session_state.resumo_simulacao:
     r = st.session_state.resumo_simulacao
     st.markdown("<div class='painel'>", unsafe_allow_html=True)
-    st.subheader("📊 Performance Estatística da Estratégia")
+    st.subheader("📊 Performance Estatística")
 
     c1, c2, c3 = st.columns(3)
     c1.metric("🎯 Média", r["media"])
@@ -173,14 +225,11 @@ if st.session_state.jogos:
                 st.session_state.comparacao_ativa
                 and n in (st.session_state.resultado_real or [])
             )
-            extra = "acerto" if acerto else ""
-            trofeu = "🏆" if acerto else ""
-
             c.markdown(
                 f"""
-                <div class="numero {extra}">
+                <div class="numero {'acerto' if acerto else ''}">
                     {n:02d}
-                    <span class="trofeu">{trofeu}</span>
+                    <span class="trofeu">{'🏆' if acerto else ''}</span>
                 </div>
                 """,
                 unsafe_allow_html=True
@@ -189,13 +238,3 @@ if st.session_state.jogos:
         if st.session_state.comparacao_ativa:
             pontos = len(set(jogo) & set(st.session_state.resultado_real))
             st.success(f"🎯 {pontos} pontos")
-
-# ================= RANKING =================
-if st.session_state.classificacao:
-    st.subheader("🧠 Ranking Estatístico das Dezenas")
-    st.markdown("🔴 **Quentes**")
-    st.write(" • ".join(f"{n:02d}" for n in st.session_state.classificacao["quentes"]))
-    st.markdown("🟠 **Mornas**")
-    st.write(" • ".join(f"{n:02d}" for n in st.session_state.classificacao["mornas"]))
-    st.markdown("🔵 **Frias**")
-    st.write(" • ".join(f"{n:02d}" for n in st.session_state.classificacao["frias"]))
