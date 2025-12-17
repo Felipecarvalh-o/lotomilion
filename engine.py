@@ -61,3 +61,43 @@ def gerar_jogos_quentes_frios(dezenas_21, total_jogos=8):
         "mornas": mornas,
         "frias": frias
     }
+from collections import Counter
+import random
+
+def gerar_jogos_historico_real(dezenas_21, historico, total_jogos=8):
+    """
+    Estratégia baseada em resultados reais da Lotofácil.
+    """
+
+    dezenas = sorted(set(dezenas_21))
+    if len(dezenas) != 21:
+        raise ValueError("Informe exatamente 21 dezenas.")
+
+    # Conta frequência real
+    contador = Counter()
+    for concurso in historico:
+        for n in concurso["numeros"]:
+            if n in dezenas:
+                contador[n] += 1
+
+    ordenadas = [n for n, _ in contador.most_common()]
+
+    # Classificação clara
+    quentes = ordenadas[:7]
+    mornas = ordenadas[7:14]
+    frias = ordenadas[14:]
+
+    jogos = []
+    for _ in range(total_jogos):
+        jogo = set()
+        jogo.update(random.sample(quentes, 5))
+        jogo.update(random.sample(mornas, 5))
+        jogo.update(random.sample(frias, 5))
+        jogos.append(sorted(jogo))
+
+    return jogos, {
+        "quentes": quentes,
+        "mornas": mornas,
+        "frias": frias
+    }
+
