@@ -20,7 +20,9 @@ defaults = {
     "classificacao": None,
     "nome_estrategia": None,
     "resultado_real": None,
-    "resultado_ativo": False
+    "resultado_ativo": False,
+    "estrategia_escolhida": None,
+    "mostrar_menu": True
 }
 for k, v in defaults.items():
     st.session_state.setdefault(k, v)
@@ -74,18 +76,43 @@ st.markdown("""
 st.title("🟣 Lotomilion Estrategista")
 st.caption("Ferramenta educacional e estatística • Sem vínculo com Loterias Caixa")
 
-# ================= PASSO 1 =================
+# ================= MENU DE ESTRATÉGIA (RECOLHÍVEL) =================
 st.subheader("🧠 Passo 1 — Estratégia")
-estrategia = st.radio(
-    "",
-    [
-        "🎯 Fechamento 21 (15 dezenas)",
-        "🔥 Frequencial (15 dezenas)",
-        "📊 Histórico Real (Lotofácil)"
-    ],
-    horizontal=True
-)
 
+if st.session_state.mostrar_menu:
+
+    with st.expander("📌 Escolher estratégia", expanded=True):
+
+        estrategia = st.radio(
+            "",
+            [
+                "🎯 Fechamento 21 (15 dezenas)",
+                "🔥 Frequencial (15 dezenas)",
+                "📊 Histórico Real (Lotofácil)"
+            ]
+        )
+
+        st.info("""
+🎯 **Fechamento 21**  
+Garante boa cobertura matemática com 8 jogos.
+
+🔥 **Frequencial**  
+Classifica dezenas em quentes, mornas e frias (simulado).
+
+📊 **Histórico Real**  
+Usa concursos reais da Lotofácil para sugerir números.
+        """)
+
+        st.session_state.estrategia_escolhida = estrategia
+
+else:
+    st.success(f"📌 Estratégia ativa: **{st.session_state.nome_estrategia}**")
+    if st.button("🔄 Alterar estratégia"):
+        st.session_state.mostrar_menu = True
+        st.session_state.jogos = None
+        st.session_state.classificacao = None
+        st.session_state.resultado_ativo = False
+        st.rerun()
 
 # ================= PASSO 2 =================
 st.subheader("🎯 Passo 2 — Base de 21 dezenas")
@@ -107,48 +134,38 @@ if st.button("🧠 Gerar Jogos"):
         st.error("Não repita dezenas.")
         st.stop()
 
-    # ===============================
-    # FECHAMENTO 21
-    # ===============================
+    estrategia = st.session_state.estrategia_escolhida
+
     if "Fechamento" in estrategia:
         st.session_state.jogos = gerar_fechamento_21_8(dezenas)
         st.session_state.classificacao = None
         st.session_state.nome_estrategia = "Fechamento 21"
 
-    # ===============================
-    # FREQUENCIAL SIMULADO
-    # ===============================
     elif "Frequencial" in estrategia:
         jogos, classificacao = gerar_jogos_quentes_frios(dezenas)
         st.session_state.jogos = jogos
         st.session_state.classificacao = classificacao
         st.session_state.nome_estrategia = "Quentes e Frios"
 
-    # ===============================
-    # HISTÓRICO REAL (GITHUB)
-    # ===============================
     elif "Histórico" in estrategia:
         historico = carregar_historico(qtd=50)
-
-        jogos, classificacao = gerar_jogos_historico_real(
-            dezenas,
-            historico
-        )
-
+        jogos, classificacao = gerar_jogos_historico_real(dezenas, historico)
         st.session_state.jogos = jogos
         st.session_state.classificacao = classificacao
-        st.session_state.nome_estrategia
+        st.session_state.nome_estrategia = "Histórico Real"
 
+    st.session_state.mostrar_menu = False
+    st.session_state.resultado_real = None
+    st.session_state.resultado_ativo = False
 
 # ================= RESULTADOS =================
 if st.session_state.jogos:
 
     st.subheader("🎲 Passo 3 — Jogos Gerados")
 
-    # ===== RESULTADO REAL =====
-    if st.session_state.nome_estrategia == "Quentes e Frios":
-        st.subheader("📥 Resultado Oficial (opcional)")
-        resultado_txt = st.text_input("Digite as 15 dezenas sorteadas")
+    if st.session_state.nome_estrategia in ["Quentes e Frios", "Histórico Real"]:
+
+        resultado_txt = st.text_input("📥 Resultado oficial (opcional)")
 
         if st.button("📊 Comparar com Resultado"):
             resultado = converter_lista(resultado_txt)
@@ -158,14 +175,6 @@ if st.session_state.jogos:
             else:
                 st.warning("Informe exatamente 15 dezenas.")
 
-        if st.session_state.resultado_ativo:
-            st.markdown("""
-            <span class="badge badge-quente">🔥 Quentes</span>
-            <span class="badge badge-morna">🟠 Mornas</span>
-            <span class="badge badge-fria">❄️ Frias</span>
-            """, unsafe_allow_html=True)
-
-    # ===== JOGOS =====
     for i, jogo in enumerate(st.session_state.jogos, 1):
 
         st.markdown(f"### Jogo {i}")
@@ -175,10 +184,8 @@ if st.session_state.jogos:
             for c, n in zip(cols, jogo[linha:linha+5]):
 
                 classe = "neutra"
-
                 if (
-                    st.session_state.nome_estrategia == "Quentes e Frios"
-                    and st.session_state.resultado_ativo
+                    st.session_state.resultado_ativo
                     and st.session_state.classificacao
                 ):
                     if n in st.session_state.classificacao.get("quentes", []):
@@ -217,6 +224,3 @@ Não possui vínculo com a Caixa Econômica Federal.
 A Lotofácil é um jogo de azar e não há garantia de premiação.
 </div>
 """, unsafe_allow_html=True)
-
-
-
