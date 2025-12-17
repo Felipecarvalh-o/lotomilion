@@ -78,9 +78,14 @@ st.caption("Ferramenta educacional e estatística • Sem vínculo com Loterias 
 st.subheader("🧠 Passo 1 — Estratégia")
 estrategia = st.radio(
     "",
-    ["🎯 Fechamento 21 (15 dezenas)", "🔥 Frequencial (15 dezenas)"],
+    [
+        "🎯 Fechamento 21 (15 dezenas)",
+        "🔥 Frequencial (15 dezenas)",
+        "📊 Histórico Real (Lotofácil)"
+    ],
     horizontal=True
 )
+
 
 # ================= PASSO 2 =================
 st.subheader("🎯 Passo 2 — Base de 21 dezenas")
@@ -192,4 +197,5 @@ Não possui vínculo com a Caixa Econômica Federal.
 A Lotofácil é um jogo de azar e não há garantia de premiação.
 </div>
 """, unsafe_allow_html=True)
+
 
