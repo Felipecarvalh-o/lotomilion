@@ -28,20 +28,6 @@ for k, v in defaults.items():
 # ================= ESTILO =================
 st.markdown("""
 <style>
-.card {
-    background:#151515;
-    padding:22px;
-    border-radius:22px;
-    text-align:center;
-    cursor:pointer;
-    transition:all .25s ease;
-    border:2px solid transparent;
-    font-size:18px;
-}
-.card:hover {
-    border-color:#9C27B0;
-    transform:scale(1.03);
-}
 .badge {
     background:#2A0934;
     padding:10px 16px;
@@ -88,7 +74,6 @@ if not st.session_state.estrategia:
     st.subheader("🎯 Escolha a Estratégia")
 
     c1, c2 = st.columns(2)
-
     with c1:
         if st.button("🎯 Fechamento 21", use_container_width=True):
             st.session_state.estrategia = "fechamento"
@@ -118,6 +103,18 @@ if st.session_state.estrategia:
     fixas_txt = st.text_area("🔒 9 dezenas FIXAS")
     variaveis_txt = st.text_area("🔄 12 dezenas VARIÁVEIS")
 
+    # ================= RESULTADO OFICIAL =================
+    st.subheader("📥 Resultado Oficial (opcional)")
+    resultado_txt = st.text_input("Informe o resultado do sorteio (15 dezenas)")
+
+    if st.button("📊 Ativar Comparação"):
+        resultado = converter_lista(resultado_txt)
+        if len(resultado) == 15:
+            st.session_state.resultado_real = resultado
+            st.session_state.comparacao_ativa = True
+        else:
+            st.warning("Informe exatamente 15 dezenas.")
+
     # ================= GERAR =================
     if st.button("🧠 Gerar Jogos"):
         fixas = converter_lista(fixas_txt)
@@ -142,26 +139,19 @@ if st.session_state.estrategia:
 # ================= PAINEL PREMIUM =================
 if st.session_state.resumo_simulacao:
     r = st.session_state.resumo_simulacao
-
     st.markdown("<div class='painel'>", unsafe_allow_html=True)
     st.subheader("📊 Performance Estatística da Estratégia")
 
     c1, c2, c3 = st.columns(3)
-    c1.metric("🎯 Média de acertos", r["media"])
-    c2.metric("🏆 Melhor resultado", r["maximo"])
-    c3.metric("📉 Risco (desvio)", r["desvio"])
+    c1.metric("🎯 Média", r["media"])
+    c2.metric("🏆 Máximo", r["maximo"])
+    c3.metric("📉 Risco", r["desvio"])
 
-    st.markdown("### 🔁 Frequência em Simulações")
     f1, f2, f3 = st.columns(3)
-    f1.metric("11+ acertos", f"{r['freq_11']}%")
-    f2.metric("12+ acertos", f"{r['freq_12']}%")
-    f3.metric("13+ acertos", f"{r['freq_13']}%")
+    f1.metric("11+", f"{r['freq_11']}%")
+    f2.metric("12+", f"{r['freq_12']}%")
+    f3.metric("13+", f"{r['freq_13']}%")
 
-    st.info(
-        "📌 Estes dados são obtidos por simulação estatística e servem para "
-        "avaliar consistência e risco da estratégia. "
-        "Não representam promessa de prêmio."
-    )
     st.markdown("</div>", unsafe_allow_html=True)
 
 # ================= JOGOS =================
@@ -173,20 +163,33 @@ if st.session_state.jogos:
         cols = st.columns(5)
 
         for c, n in zip(cols * 3, jogo):
+            acerto = (
+                st.session_state.comparacao_ativa
+                and n in (st.session_state.resultado_real or [])
+            )
+            extra = "acerto" if acerto else ""
+            trofeu = "🏆" if acerto else ""
+
             c.markdown(
-                f"<div class='numero'>{n:02d}</div>",
+                f"""
+                <div class="numero {extra}">
+                    {n:02d}
+                    <span class="trofeu">{trofeu}</span>
+                </div>
+                """,
                 unsafe_allow_html=True
             )
+
+        if st.session_state.comparacao_ativa:
+            pontos = len(set(jogo) & set(st.session_state.resultado_real))
+            st.success(f"🎯 {pontos} pontos")
 
 # ================= RANKING =================
 if st.session_state.classificacao:
     st.subheader("🧠 Ranking Estatístico das Dezenas")
-
     st.markdown("🔴 **Quentes**")
     st.write(" • ".join(f"{n:02d}" for n in st.session_state.classificacao["quentes"]))
-
     st.markdown("🟠 **Mornas**")
     st.write(" • ".join(f"{n:02d}" for n in st.session_state.classificacao["mornas"]))
-
     st.markdown("🔵 **Frias**")
     st.write(" • ".join(f"{n:02d}" for n in st.session_state.classificacao["frias"]))
