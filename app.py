@@ -14,11 +14,11 @@ st.set_page_config(
 
 # ================= SESSION STATE =================
 defaults = {
+    "estrategia": None,
     "jogos": None,
     "classificacao": None,
     "resultado_real": None,
     "comparacao_ativa": False,
-    "mostrar_analise": False,
     "nome_estrategia": None
 }
 for k, v in defaults.items():
@@ -27,6 +27,24 @@ for k, v in defaults.items():
 # ================= ESTILO =================
 st.markdown("""
 <style>
+.card {
+    background:#151515;
+    padding:20px;
+    border-radius:20px;
+    text-align:center;
+    cursor:pointer;
+    transition:all .25s ease;
+    border:2px solid transparent;
+}
+.card:hover {
+    border-color:#9C27B0;
+    transform:scale(1.03);
+}
+.card-ativa {
+    border-color:#9C27B0;
+    box-shadow:0 0 18px rgba(156,39,176,.6);
+}
+
 .numero {
     padding:14px;
     border-radius:16px;
@@ -34,30 +52,27 @@ st.markdown("""
     font-weight:700;
     text-align:center;
     color:white;
-    transition:all .3s ease;
+    background:#6A1B9A;
+    position:relative;
 }
-
-.neutra {background:#6A1B9A;}
-
-.quente {background:#E53935;}
-.morna {background:#FB8C00;}
-.fria {background:#3949AB;}
 
 .acerto {
     border:2px solid #00E676;
-    box-shadow:0 0 12px rgba(0,230,118,.7);
+    box-shadow:0 0 14px rgba(0,230,118,.8);
 }
 
-.legenda span {
-    margin-right:14px;
-    font-size:13px;
+.trofeu {
+    position:absolute;
+    top:-6px;
+    right:-6px;
+    font-size:14px;
 }
 
 .ranking-box {
     background:#111;
-    padding:14px;
-    border-radius:14px;
-    margin-top:14px;
+    padding:16px;
+    border-radius:16px;
+    margin-top:18px;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -66,56 +81,59 @@ st.markdown("""
 st.title("🟣 Lotomilion Estrategista")
 st.caption("Ferramenta educacional e estatística • Sem vínculo com Loterias Caixa")
 
-# ================= ESTRATÉGIA =================
-st.subheader("🎯 Estratégia")
-estrategia = st.radio(
-    "",
-    ["🎯 Fechamento 21", "📊 Histórico Real"]
-)
+# ================= MENU EM CARDS =================
+st.subheader("🎯 Escolha a Estratégia")
 
-# ================= BASE =================
-st.subheader("🧩 Base de 21 dezenas")
-fixas_txt = st.text_area("🔒 9 dezenas FIXAS")
-variaveis_txt = st.text_area("🔄 12 dezenas VARIÁVEIS")
+c1, c2 = st.columns(2)
 
-# ================= RESULTADO =================
-st.subheader("📥 Resultado Oficial (opcional)")
-resultado_txt = st.text_input("Informe o resultado do sorteio (15 dezenas)")
-
-if st.button("📊 Ativar Comparação"):
-    resultado = converter_lista(resultado_txt)
-    if len(resultado) == 15:
-        st.session_state.resultado_real = resultado
-        st.session_state.comparacao_ativa = True
-    else:
-        st.warning("Informe exatamente 15 dezenas.")
-
-# ================= GERAR =================
-if st.button("🧠 Gerar Jogos"):
-    fixas = converter_lista(fixas_txt)
-    variaveis = converter_lista(variaveis_txt)
-
-    dezenas = sorted(set(fixas + variaveis))
-    if len(dezenas) != 21:
-        st.error("Use exatamente 21 dezenas.")
-        st.stop()
-
-    if "Fechamento" in estrategia:
-        st.session_state.jogos = gerar_fechamento_21_8(dezenas)
-        st.session_state.classificacao = None
+with c1:
+    if st.button("🎯 Fechamento 21", use_container_width=True):
+        st.session_state.estrategia = "fechamento"
         st.session_state.nome_estrategia = "Fechamento 21"
 
-    else:
-        historico = carregar_historico(qtd=50)
-        jogos, classificacao = gerar_jogos_historico_real(dezenas, historico)
-        st.session_state.jogos = jogos
-        st.session_state.classificacao = classificacao
+with c2:
+    if st.button("📊 Histórico Real", use_container_width=True):
+        st.session_state.estrategia = "historico"
         st.session_state.nome_estrategia = "Histórico Real"
 
-    st.session_state.comparacao_ativa = False
+# ================= BASE =================
+if st.session_state.estrategia:
+    st.subheader("🧩 Base de 21 dezenas")
+    fixas_txt = st.text_area("🔒 9 dezenas FIXAS")
+    variaveis_txt = st.text_area("🔄 12 dezenas VARIÁVEIS")
 
-# ================= TOGGLE =================
-st.checkbox("🔄 Mostrar análise de frequência", key="mostrar_analise")
+    st.subheader("📥 Resultado Oficial (opcional)")
+    resultado_txt = st.text_input("Informe o resultado do sorteio (15 dezenas)")
+
+    if st.button("📊 Ativar Comparação"):
+        resultado = converter_lista(resultado_txt)
+        if len(resultado) == 15:
+            st.session_state.resultado_real = resultado
+            st.session_state.comparacao_ativa = True
+        else:
+            st.warning("Informe exatamente 15 dezenas.")
+
+    # ================= GERAR =================
+    if st.button("🧠 Gerar Jogos"):
+        fixas = converter_lista(fixas_txt)
+        variaveis = converter_lista(variaveis_txt)
+
+        dezenas = sorted(set(fixas + variaveis))
+        if len(dezenas) != 21:
+            st.error("Use exatamente 21 dezenas.")
+            st.stop()
+
+        if st.session_state.estrategia == "fechamento":
+            st.session_state.jogos = gerar_fechamento_21_8(dezenas)
+            st.session_state.classificacao = None
+
+        else:
+            historico = carregar_historico(qtd=50)
+            jogos, classificacao = gerar_jogos_historico_real(dezenas, historico)
+            st.session_state.jogos = jogos
+            st.session_state.classificacao = classificacao
+
+        st.session_state.comparacao_ativa = False
 
 # ================= JOGOS =================
 if st.session_state.jogos:
@@ -126,25 +144,21 @@ if st.session_state.jogos:
         cols = st.columns(5)
 
         for c, n in zip(cols * 3, jogo):
-            classe = "neutra"
-
-            if st.session_state.comparacao_ativa and st.session_state.classificacao:
-                if n in st.session_state.classificacao["quentes"]:
-                    classe = "quente"
-                elif n in st.session_state.classificacao["mornas"]:
-                    classe = "morna"
-                elif n in st.session_state.classificacao["frias"]:
-                    classe = "fria"
-
             acerto = (
                 st.session_state.comparacao_ativa
                 and n in (st.session_state.resultado_real or [])
             )
 
             extra = "acerto" if acerto else ""
+            trofeu = "🏆" if acerto else ""
 
             c.markdown(
-                f"<div class='numero {classe} {extra}'>{n:02d}</div>",
+                f"""
+                <div class="numero {extra}">
+                    {n:02d}
+                    <span class="trofeu">{trofeu}</span>
+                </div>
+                """,
                 unsafe_allow_html=True
             )
 
@@ -152,25 +166,20 @@ if st.session_state.jogos:
             pontos = len(set(jogo) & set(st.session_state.resultado_real))
             st.success(f"🎯 {pontos} pontos")
 
-# ================= LEGENDA + RANKING =================
-if st.session_state.mostrar_analise and st.session_state.classificacao:
+# ================= RANKING =================
+if st.session_state.classificacao:
+    st.subheader("🧠 Ranking Estatístico das Dezenas")
+    st.caption(
+        "Classificação estatística baseada na estratégia Histórico Real. "
+        "Não representa previsão ou garantia de acerto."
+    )
 
-    st.markdown("""
-<div class="legenda">
-<span>🔴 Quente — maior presença estatística</span>
-<span>🟠 Morna — presença intermediária</span>
-<span>🔵 Fria — menor presença estatística</span>
-<span>🟢 Borda verde — número acertado no sorteio</span>
-</div>
-""", unsafe_allow_html=True)
+    with st.container():
+        st.markdown("🔴 **Quentes — maior presença histórica**")
+        st.write(" • ".join(f"{n:02d}" for n in st.session_state.classificacao["quentes"]))
 
-    st.markdown("### 🧠 Ranking Estatístico das Dezenas")
-    st.caption("Classificação baseada na estratégia escolhida. Não é previsão.")
+        st.markdown("🟠 **Mornas — presença intermediária**")
+        st.write(" • ".join(f"{n:02d}" for n in st.session_state.classificacao["mornas"]))
 
-    for titulo, cor in [
-        ("🔴 Quentes", "quentes"),
-        ("🟠 Mornas", "mornas"),
-        ("🔵 Frias", "frias")
-    ]:
-        st.markdown(f"**{titulo}**")
-        st.write(" • ".join(f"{n:02d}" for n in st.session_state.classificacao[cor]))
+        st.markdown("🔵 **Frias — menor presença histórica**")
+        st.write(" • ".join(f"{n:02d}" for n in st.session_state.classificacao["frias"]))
