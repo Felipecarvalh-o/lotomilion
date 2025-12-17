@@ -1,11 +1,13 @@
 from data.lotofacil_historico import carregar_historico
-from engine import gerar_jogos_historico_real
+from engine import (
+    gerar_fechamento_21_8,
+    gerar_jogos_historico_real,
+    gerar_jogos_quentes_frios
+)
 
 import streamlit as st
 from streamlit.components.v1 import html
-
 from utils import converter_lista
-from engine import gerar_fechamento_21_8, gerar_jogos_quentes_frios
 
 # ================= CONFIG =================
 st.set_page_config(
@@ -21,8 +23,7 @@ defaults = {
     "nome_estrategia": None,
     "resultado_real": None,
     "resultado_ativo": False,
-    "estrategia_escolhida": None,
-    "mostrar_menu": True
+    "estrategia_escolhida": "Fechamento",
 }
 for k, v in defaults.items():
     st.session_state.setdefault(k, v)
@@ -49,17 +50,6 @@ st.markdown("""
     border-bottom:1px solid #2a2a2a;
 }
 
-.badge {
-    padding:4px 12px;
-    border-radius:14px;
-    font-size:12px;
-    color:white;
-    margin-right:6px;
-}
-.badge-quente {background:#E53935;}
-.badge-morna {background:#FB8C00;}
-.badge-fria {background:#3949AB;}
-
 .copy-btn {
     background:#9C27B0;
     color:white;
@@ -69,6 +59,20 @@ st.markdown("""
     border:none;
     cursor:pointer;
 }
+
+.tab-card {
+    padding:14px;
+    border-radius:16px;
+    font-weight:700;
+    text-align:center;
+    cursor:pointer;
+    background:#1f1f1f;
+    border:2px solid transparent;
+}
+.tab-active {
+    border-color:#9C27B0;
+    background:#2a1f33;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -76,48 +80,40 @@ st.markdown("""
 st.title("🟣 Lotomilion Estrategista")
 st.caption("Ferramenta educacional e estatística • Sem vínculo com Loterias Caixa")
 
-# ================= MENU DE ESTRATÉGIA (RECOLHÍVEL) =================
+# ================= MENU MODERNO =================
 st.subheader("🧠 Passo 1 — Estratégia")
 
-if st.session_state.mostrar_menu:
+col1, col2 = st.columns(2)
 
-    with st.expander("📌 Escolher estratégia", expanded=True):
+with col1:
+    if st.button("🎯 Fechamento 21", use_container_width=True):
+        st.session_state.estrategia_escolhida = "Fechamento"
 
-        estrategia = st.radio(
-            "",
-            [
-                "🎯 Fechamento 21 (15 dezenas)",
-                "🔥 Frequencial (15 dezenas)",
-                "📊 Histórico Real (Lotofácil)"
-            ]
-        )
+with col2:
+    if st.button("📊 Histórico Real", use_container_width=True):
+        st.session_state.estrategia_escolhida = "Historico"
 
-        st.info("""
-🎯 **Fechamento 21**  
-Garante boa cobertura matemática com 8 jogos.
-
-🔥 **Frequencial**  
-Classifica dezenas em quentes, mornas e frias (simulado).
-
-📊 **Histórico Real**  
-Usa concursos reais da Lotofácil para sugerir números.
-        """)
-
-        st.session_state.estrategia_escolhida = estrategia
-
+if st.session_state.estrategia_escolhida == "Fechamento":
+    st.info("🎯 **Fechamento 21** — Cobertura matemática com 8 jogos.")
 else:
-    st.success(f"📌 Estratégia ativa: **{st.session_state.nome_estrategia}**")
-    if st.button("🔄 Alterar estratégia"):
-        st.session_state.mostrar_menu = True
-        st.session_state.jogos = None
-        st.session_state.classificacao = None
-        st.session_state.resultado_ativo = False
-        st.rerun()
+    st.info("📊 **Histórico Real** — Baseado em concursos reais da Lotofácil.")
 
 # ================= PASSO 2 =================
 st.subheader("🎯 Passo 2 — Base de 21 dezenas")
 fixas_txt = st.text_area("🔒 9 dezenas FIXAS")
 variaveis_txt = st.text_area("🔄 12 dezenas VARIÁVEIS")
+
+# ================= RESULTADO GLOBAL =================
+st.subheader("📥 Resultado Oficial (opcional)")
+resultado_txt = st.text_input("Informe o resultado do sorteio (15 dezenas)")
+if st.button("📊 Ativar Comparação"):
+    resultado = converter_lista(resultado_txt)
+    if len(resultado) == 15:
+        st.session_state.resultado_real = resultado
+        st.session_state.resultado_ativo = True
+        st.success("Resultado ativado para comparação.")
+    else:
+        st.warning("Informe exatamente 15 dezenas.")
 
 # ================= GERAR =================
 if st.button("🧠 Gerar Jogos"):
@@ -134,46 +130,28 @@ if st.button("🧠 Gerar Jogos"):
         st.error("Não repita dezenas.")
         st.stop()
 
-    estrategia = st.session_state.estrategia_escolhida
+    if st.session_state.estrategia_escolhida == "Fechamento":
+        jogos = gerar_fechamento_21_8(dezenas)
 
-    if "Fechamento" in estrategia:
-        st.session_state.jogos = gerar_fechamento_21_8(dezenas)
-        st.session_state.classificacao = None
-        st.session_state.nome_estrategia = "Fechamento 21"
+        # classificação interna (frequência invisível)
+        _, classificacao = gerar_jogos_quentes_frios(dezenas)
 
-    elif "Frequencial" in estrategia:
-        jogos, classificacao = gerar_jogos_quentes_frios(dezenas)
         st.session_state.jogos = jogos
         st.session_state.classificacao = classificacao
-        st.session_state.nome_estrategia = "Quentes e Frios"
+        st.session_state.nome_estrategia = "Fechamento 21"
 
-    elif "Histórico" in estrategia:
+    else:
         historico = carregar_historico(qtd=50)
         jogos, classificacao = gerar_jogos_historico_real(dezenas, historico)
+
         st.session_state.jogos = jogos
         st.session_state.classificacao = classificacao
         st.session_state.nome_estrategia = "Histórico Real"
 
-    st.session_state.mostrar_menu = False
-    st.session_state.resultado_real = None
-    st.session_state.resultado_ativo = False
-
 # ================= RESULTADOS =================
 if st.session_state.jogos:
 
-    st.subheader("🎲 Passo 3 — Jogos Gerados")
-
-    if st.session_state.nome_estrategia in ["Quentes e Frios", "Histórico Real"]:
-
-        resultado_txt = st.text_input("📥 Resultado oficial (opcional)")
-
-        if st.button("📊 Comparar com Resultado"):
-            resultado = converter_lista(resultado_txt)
-            if len(resultado) == 15:
-                st.session_state.resultado_real = resultado
-                st.session_state.resultado_ativo = True
-            else:
-                st.warning("Informe exatamente 15 dezenas.")
+    st.subheader(f"🎲 Jogos Gerados — {st.session_state.nome_estrategia}")
 
     for i, jogo in enumerate(st.session_state.jogos, 1):
 
@@ -184,10 +162,7 @@ if st.session_state.jogos:
             for c, n in zip(cols, jogo[linha:linha+5]):
 
                 classe = "neutra"
-                if (
-                    st.session_state.resultado_ativo
-                    and st.session_state.classificacao
-                ):
+                if st.session_state.classificacao:
                     if n in st.session_state.classificacao.get("quentes", []):
                         classe = "quente"
                     elif n in st.session_state.classificacao.get("mornas", []):
