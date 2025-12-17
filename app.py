@@ -24,7 +24,6 @@ defaults = {
     "resultado_real": None,
     "resultado_ativo": False,
     "estrategia_escolhida": "Fechamento",
-    "mostrar_frequencia": False
 }
 for k, v in defaults.items():
     st.session_state.setdefault(k, v)
@@ -39,16 +38,23 @@ st.markdown("""
     font-weight:700;
     text-align:center;
     color:white;
-    transition: all 0.4s ease;
+    transition: all 0.35s ease;
 }
+
 .quente {background:#E53935;}
 .morna {background:#FB8C00;}
 .fria {background:#3949AB;}
 .neutra {background:#7A1FA2;}
 
+.acertou {
+    border:2px solid #00E676;
+    box-shadow:0 0 12px rgba(0,230,118,0.8);
+}
+
 .fade-in {
     animation: fadeIn 0.6s ease-in-out;
 }
+
 @keyframes fadeIn {
     from {opacity:0; transform:translateY(6px);}
     to {opacity:1; transform:translateY(0);}
@@ -63,11 +69,12 @@ st.markdown("""
     border:none;
     cursor:pointer;
 }
+
 .rank-box {
     padding:12px;
     border-radius:14px;
     background:#1f1f1f;
-    margin-bottom:10px;
+    margin-bottom:12px;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -134,13 +141,6 @@ if st.button("🧠 Gerar Jogos"):
     st.session_state.nome_estrategia = nome
     st.session_state.resultado_ativo = False
 
-# ================= TOGGLE =================
-if st.session_state.jogos:
-    st.session_state.mostrar_frequencia = st.toggle(
-        "🔄 Mostrar análise de frequência",
-        value=st.session_state.mostrar_frequencia
-    )
-
 # ================= RESULTADOS =================
 if st.session_state.jogos:
 
@@ -155,10 +155,9 @@ if st.session_state.jogos:
             for c, n in zip(cols, jogo[linha:linha+5]):
 
                 classe = "neutra"
-                if (
-                    st.session_state.resultado_ativo
-                    and st.session_state.mostrar_frequencia
-                ):
+                acertou = ""
+
+                if st.session_state.resultado_ativo:
                     if n in st.session_state.classificacao["quentes"]:
                         classe = "quente"
                     elif n in st.session_state.classificacao["mornas"]:
@@ -166,8 +165,11 @@ if st.session_state.jogos:
                     elif n in st.session_state.classificacao["frias"]:
                         classe = "fria"
 
+                    if n in st.session_state.resultado_real:
+                        acertou = "acertou"
+
                 c.markdown(
-                    f"<div class='numero {classe} fade-in'>{n:02d}</div>",
+                    f"<div class='numero {classe} {acertou} fade-in'>{n:02d}</div>",
                     unsafe_allow_html=True
                 )
 
@@ -186,23 +188,23 @@ if st.session_state.jogos:
         )
 
     # ================= LEGENDA =================
-    if st.session_state.mostrar_frequencia:
-        st.markdown("### 📊 Legenda")
+    if st.session_state.resultado_ativo:
+        st.markdown("### 📊 Legenda da Análise")
         st.markdown("""
-- 🔴 **Quente**: maior incidência  
-- 🟠 **Morna**: incidência média  
-- 🔵 **Fria**: menor incidência
+- 🔴 **Quente**: maior frequência na análise estatística  
+- 🟠 **Morna**: frequência intermediária  
+- 🔵 **Fria**: menor frequência  
+- 🟢 **Borda verde**: número presente no resultado do sorteio  
+⚠️ *As cores não representam acertos, apenas análise estatística.*
 """)
 
-    # ================= RANKING =================
-    if st.session_state.resultado_ativo:
-        st.markdown("### 🧠 Ranking das Dezenas")
+        # ================= RANKING =================
+        st.markdown("### 🧠 Ranking Estatístico das Dezenas")
         ranking = (
             st.session_state.classificacao["quentes"]
             + st.session_state.classificacao["mornas"]
             + st.session_state.classificacao["frias"]
         )
-
         st.markdown(
             "<div class='rank-box'>" +
             " • ".join(f"{n:02d}" for n in ranking) +
