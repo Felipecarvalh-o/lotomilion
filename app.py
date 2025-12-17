@@ -1,5 +1,5 @@
 from data.lotofacil_historico import carregar_historico
-from engine import gerar_fechamento_21_8, gerar_jogos_historico_real
+from engine import gerar_fechamento_21_8, gerar_jogos_historico_real, gerar_historico_21_automatico
 from simulador import simular_cenario
 from utils import converter_lista
 
@@ -81,7 +81,7 @@ if not st.session_state.estrategia:
             st.rerun()
 
     with c2:
-        if st.button("📊 Histórico Real", use_container_width=True):
+        if st.button("📊 Histórico Real (Automático)", use_container_width=True):
             st.session_state.estrategia = "historico"
             st.session_state.nome_estrategia = "Histórico Real"
             st.rerun()
@@ -98,11 +98,6 @@ if st.session_state.estrategia:
             st.session_state[k] = defaults[k]
         st.rerun()
 
-    # ================= BASE =================
-    st.subheader("🧩 Base de 21 dezenas")
-    fixas_txt = st.text_area("🔒 9 dezenas FIXAS")
-    variaveis_txt = st.text_area("🔄 12 dezenas VARIÁVEIS")
-
     # ================= RESULTADO OFICIAL =================
     st.subheader("📥 Resultado Oficial (opcional)")
     resultado_txt = st.text_input("Informe o resultado do sorteio (15 dezenas)")
@@ -115,26 +110,37 @@ if st.session_state.estrategia:
         else:
             st.warning("Informe exatamente 15 dezenas.")
 
-    # ================= GERAR =================
-    if st.button("🧠 Gerar Jogos"):
-        fixas = converter_lista(fixas_txt)
-        variaveis = converter_lista(variaveis_txt)
+    # ================= FECHAMENTO 21 =================
+    if st.session_state.estrategia == "fechamento":
+        st.subheader("🧩 Base de 21 dezenas")
+        fixas_txt = st.text_area("🔒 9 dezenas FIXAS")
+        variaveis_txt = st.text_area("🔄 12 dezenas VARIÁVEIS")
 
-        dezenas = sorted(set(fixas + variaveis))
-        if len(dezenas) != 21:
-            st.error("Use exatamente 21 dezenas.")
-            st.stop()
+        if st.button("🧠 Gerar Jogos"):
+            fixas = converter_lista(fixas_txt)
+            variaveis = converter_lista(variaveis_txt)
 
-        if st.session_state.estrategia == "fechamento":
+            dezenas = sorted(set(fixas + variaveis))
+            if len(dezenas) != 21:
+                st.error("Use exatamente 21 dezenas.")
+                st.stop()
+
             jogos = gerar_fechamento_21_8(dezenas)
-            st.session_state.classificacao = None
-        else:
-            historico = carregar_historico(qtd=50)
-            jogos, classificacao = gerar_jogos_historico_real(dezenas, historico)
-            st.session_state.classificacao = classificacao
 
-        st.session_state.jogos = jogos
-        st.session_state.resumo_simulacao = simular_cenario(jogos)
+            st.session_state.jogos = jogos
+            st.session_state.classificacao = None
+            st.session_state.resumo_simulacao = simular_cenario(jogos)
+
+    # ================= HISTÓRICO REAL AUTOMÁTICO =================
+    if st.session_state.estrategia == "historico":
+        if st.button("🧠 Analisar histórico e gerar jogos"):
+            historico = carregar_historico(qtd=50)
+
+            jogos, classificacao = gerar_historico_21_automatico(historico)
+
+            st.session_state.jogos = jogos
+            st.session_state.classificacao = classificacao
+            st.session_state.resumo_simulacao = simular_cenario(jogos)
 
 # ================= PAINEL PREMIUM =================
 if st.session_state.resumo_simulacao:
