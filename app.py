@@ -1,5 +1,6 @@
 from data.lotofacil_historico import carregar_historico
 from engine import gerar_fechamento_21_8, gerar_jogos_historico_real
+from simulador import simular_cenario
 from utils import converter_lista
 
 import streamlit as st
@@ -18,7 +19,8 @@ defaults = {
     "classificacao": None,
     "resultado_real": None,
     "comparacao_ativa": False,
-    "nome_estrategia": None
+    "nome_estrategia": None,
+    "resumo_simulacao": None
 }
 for k, v in defaults.items():
     st.session_state.setdefault(k, v)
@@ -67,6 +69,13 @@ st.markdown("""
     right:-6px;
     font-size:14px;
 }
+.painel {
+    background:#0F0F0F;
+    padding:20px;
+    border-radius:18px;
+    margin-top:20px;
+    border:1px solid #2A0934;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -92,7 +101,7 @@ if not st.session_state.estrategia:
             st.session_state.nome_estrategia = "Histórico Real"
             st.rerun()
 
-# ================= BADGE ATIVO =================
+# ================= BADGE =================
 if st.session_state.estrategia:
     st.markdown(
         f"<div class='badge'>📌 Estratégia ativa: <b>{st.session_state.nome_estrategia}</b></div>",
@@ -109,18 +118,6 @@ if st.session_state.estrategia:
     fixas_txt = st.text_area("🔒 9 dezenas FIXAS")
     variaveis_txt = st.text_area("🔄 12 dezenas VARIÁVEIS")
 
-    # ================= RESULTADO =================
-    st.subheader("📥 Resultado Oficial (opcional)")
-    resultado_txt = st.text_input("Informe o resultado do sorteio (15 dezenas)")
-
-    if st.button("📊 Ativar Comparação"):
-        resultado = converter_lista(resultado_txt)
-        if len(resultado) == 15:
-            st.session_state.resultado_real = resultado
-            st.session_state.comparacao_ativa = True
-        else:
-            st.warning("Informe exatamente 15 dezenas.")
-
     # ================= GERAR =================
     if st.button("🧠 Gerar Jogos"):
         fixas = converter_lista(fixas_txt)
@@ -132,15 +129,40 @@ if st.session_state.estrategia:
             st.stop()
 
         if st.session_state.estrategia == "fechamento":
-            st.session_state.jogos = gerar_fechamento_21_8(dezenas)
+            jogos = gerar_fechamento_21_8(dezenas)
             st.session_state.classificacao = None
         else:
             historico = carregar_historico(qtd=50)
             jogos, classificacao = gerar_jogos_historico_real(dezenas, historico)
-            st.session_state.jogos = jogos
             st.session_state.classificacao = classificacao
 
-        st.session_state.comparacao_ativa = False
+        st.session_state.jogos = jogos
+        st.session_state.resumo_simulacao = simular_cenario(jogos)
+
+# ================= PAINEL PREMIUM =================
+if st.session_state.resumo_simulacao:
+    r = st.session_state.resumo_simulacao
+
+    st.markdown("<div class='painel'>", unsafe_allow_html=True)
+    st.subheader("📊 Performance Estatística da Estratégia")
+
+    c1, c2, c3 = st.columns(3)
+    c1.metric("🎯 Média de acertos", r["media"])
+    c2.metric("🏆 Melhor resultado", r["maximo"])
+    c3.metric("📉 Risco (desvio)", r["desvio"])
+
+    st.markdown("### 🔁 Frequência em Simulações")
+    f1, f2, f3 = st.columns(3)
+    f1.metric("11+ acertos", f"{r['freq_11']}%")
+    f2.metric("12+ acertos", f"{r['freq_12']}%")
+    f3.metric("13+ acertos", f"{r['freq_13']}%")
+
+    st.info(
+        "📌 Estes dados são obtidos por simulação estatística e servem para "
+        "avaliar consistência e risco da estratégia. "
+        "Não representam promessa de prêmio."
+    )
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # ================= JOGOS =================
 if st.session_state.jogos:
@@ -151,41 +173,20 @@ if st.session_state.jogos:
         cols = st.columns(5)
 
         for c, n in zip(cols * 3, jogo):
-            acerto = (
-                st.session_state.comparacao_ativa
-                and n in (st.session_state.resultado_real or [])
-            )
-
-            extra = "acerto" if acerto else ""
-            trofeu = "🏆" if acerto else ""
-
             c.markdown(
-                f"""
-                <div class="numero {extra}">
-                    {n:02d}
-                    <span class="trofeu">{trofeu}</span>
-                </div>
-                """,
+                f"<div class='numero'>{n:02d}</div>",
                 unsafe_allow_html=True
             )
-
-        if st.session_state.comparacao_ativa:
-            pontos = len(set(jogo) & set(st.session_state.resultado_real))
-            st.success(f"🎯 {pontos} pontos")
 
 # ================= RANKING =================
 if st.session_state.classificacao:
     st.subheader("🧠 Ranking Estatístico das Dezenas")
-    st.caption(
-        "Classificação baseada em resultados históricos da Lotofácil. "
-        "Indicador estatístico, não é previsão."
-    )
 
-    st.markdown("🔴 **Quentes** — maior presença histórica")
+    st.markdown("🔴 **Quentes**")
     st.write(" • ".join(f"{n:02d}" for n in st.session_state.classificacao["quentes"]))
 
-    st.markdown("🟠 **Mornas** — presença intermediária")
+    st.markdown("🟠 **Mornas**")
     st.write(" • ".join(f"{n:02d}" for n in st.session_state.classificacao["mornas"]))
 
-    st.markdown("🔵 **Frias** — menor presença histórica")
+    st.markdown("🔵 **Frias**")
     st.write(" • ".join(f"{n:02d}" for n in st.session_state.classificacao["frias"]))
