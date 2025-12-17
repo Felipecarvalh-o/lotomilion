@@ -101,3 +101,45 @@ def gerar_jogos_historico_real(dezenas_21, historico, total_jogos=8):
         "frias": frias
     }
 
+from collections import Counter
+import random
+
+def gerar_jogos_historico_real(dezenas_21, historico, total_jogos=8):
+    dezenas = sorted(set(dezenas_21))
+    if len(dezenas) != 21:
+        raise ValueError("Informe exatamente 21 dezenas.")
+
+    contador = Counter()
+
+    for concurso in historico:
+        for n in concurso.get("numeros", []):
+            if n in dezenas:
+                contador[n] += 1
+
+    ordenadas = [n for n, _ in contador.most_common()]
+
+    # fallback de segurança
+    while len(ordenadas) < 21:
+        for n in dezenas:
+            if n not in ordenadas:
+                ordenadas.append(n)
+
+    quentes = ordenadas[:7]
+    mornas = ordenadas[7:14]
+    frias = ordenadas[14:21]
+
+    jogos = []
+    for _ in range(total_jogos):
+        jogo = set()
+        jogo.update(random.sample(quentes, 5))
+        jogo.update(random.sample(mornas, 5))
+        jogo.update(random.sample(frias, 5))
+        jogos.append(sorted(jogo))
+
+    return jogos, {
+        "quentes": quentes,
+        "mornas": mornas,
+        "frias": frias
+    }
+
+
