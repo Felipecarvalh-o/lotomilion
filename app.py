@@ -1,3 +1,6 @@
+from data.lotofacil_historico import carregar_historico
+from engine import gerar_jogos_historico_real
+
 import streamlit as st
 from streamlit.components.v1 import html
 
@@ -189,3 +192,4 @@ Não possui vínculo com a Caixa Econômica Federal.
 A Lotofácil é um jogo de azar e não há garantia de premiação.
 </div>
 """, unsafe_allow_html=True)
+
