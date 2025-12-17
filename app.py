@@ -3,7 +3,6 @@ from streamlit.components.v1 import html
 
 from utils import converter_lista
 from engine import gerar_fechamento_21_8, gerar_jogos_quentes_frios
-from simulador import simular_cenario
 
 # ================= CONFIG =================
 st.set_page_config(
@@ -45,7 +44,13 @@ st.markdown("""
     border-bottom:1px solid #2a2a2a;
 }
 
-.badge {padding:4px 12px; border-radius:14px; font-size:12px; color:white;}
+.badge {
+    padding:4px 12px;
+    border-radius:14px;
+    font-size:12px;
+    color:white;
+    margin-right:6px;
+}
 .badge-quente {background:#E53935;}
 .badge-morna {background:#FB8C00;}
 .badge-fria {background:#3949AB;}
@@ -142,15 +147,17 @@ if st.session_state.jogos:
             for c, n in zip(cols, jogo[linha:linha+5]):
 
                 classe = "neutra"
+
                 if (
                     st.session_state.nome_estrategia == "Quentes e Frios"
                     and st.session_state.resultado_ativo
+                    and st.session_state.classificacao
                 ):
-                    if n in st.session_state.classificacao["quentes"]:
+                    if n in st.session_state.classificacao.get("quentes", []):
                         classe = "quente"
-                    elif n in st.session_state.classificacao["mornas"]:
+                    elif n in st.session_state.classificacao.get("mornas", []):
                         classe = "morna"
-                    elif n in st.session_state.classificacao["frias"]:
+                    elif n in st.session_state.classificacao.get("frias", []):
                         classe = "fria"
 
                 c.markdown(
