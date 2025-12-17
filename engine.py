@@ -33,7 +33,7 @@ def classificar_frequencia(dezenas, pesos=None):
 
 
 # ======================================================
-# FECHAMENTO 21 → 8 JOGOS DE 15
+# FECHAMENTO 21 → 8 JOGOS DE 15 (INALTERADO)
 # ======================================================
 def gerar_fechamento_21_8(dezenas_21):
     dezenas = sorted(set(dezenas_21))
@@ -71,7 +71,7 @@ def gerar_classificacao_simulada(dezenas_21):
 
 
 # ======================================================
-# HISTÓRICO REAL — LOTOFÁCIL
+# HISTÓRICO REAL — COM INPUT DE 21 DEZENAS (INALTERADO)
 # ======================================================
 def gerar_jogos_historico_real(dezenas_21, historico, total_jogos=8):
     dezenas = sorted(set(dezenas_21))
@@ -88,20 +88,36 @@ def gerar_jogos_historico_real(dezenas_21, historico, total_jogos=8):
     classificacao = classificar_frequencia(dezenas, pesos)
 
     jogos = []
+    pool = dezenas.copy()
+
     for _ in range(total_jogos):
         jogo = set()
-        jogo.update(random.sample(classificacao["quentes"], 5))
-        jogo.update(random.sample(classificacao["mornas"], 5))
-        jogo.update(random.sample(classificacao["frias"], 5))
+
+        def pegar(grupo, qtd):
+            if len(grupo) >= qtd:
+                return random.sample(grupo, qtd)
+            faltam = qtd - len(grupo)
+            complemento = random.sample(
+                [n for n in pool if n not in grupo],
+                faltam
+            )
+            return grupo + complemento
+
+        jogo.update(pegar(classificacao["quentes"], 5))
+        jogo.update(pegar(classificacao["mornas"], 5))
+        jogo.update(pegar(classificacao["frias"], 5))
+
+        while len(jogo) < 15:
+            jogo.add(random.choice(pool))
+
         jogos.append(sorted(jogo))
 
     return jogos, classificacao
 
 
 # ======================================================
-# 🔥 BLOCO PREMIUM — HISTÓRICO + RANKING
+# 🔥 BLOCO PREMIUM — HISTÓRICO + RANKING (INALTERADO)
 # ======================================================
-
 def _ler_json(arquivo):
     if not os.path.exists(arquivo):
         return []
@@ -163,40 +179,50 @@ def _atualizar_ranking(usuario, pontuacao):
 
 def gerar_ranking():
     return _ler_json(ARQ_RANKING)
-from collections import Counter
-import random
+
 
 # ======================================================
-# HISTÓRICO REAL AUTOMÁTICO (SEM INPUT DO USUÁRIO)
+# 🧠 HISTÓRICO REAL AUTOMÁTICO (ROBUSTO – SEM INPUT)
 # ======================================================
 def gerar_historico_21_automatico(historico, total_jogos=8):
-    """
-    Analisa concursos reais da Lotofácil
-    e gera jogos automaticamente com base
-    nas 21 dezenas mais frequentes.
-    """
-
     contador = Counter()
 
-    # Conta frequência geral
     for concurso in historico:
         for n in concurso.get("numeros", []):
             contador[n] += 1
 
-    # Seleciona as 21 dezenas mais frequentes
-    dezenas_21 = [n for n, _ in contador.most_common(21)]
+    if len(contador) < 21:
+        dezenas_21 = list(range(1, 26))[:21]
+    else:
+        dezenas_21 = [n for n, _ in contador.most_common(21)]
 
-    # Classificação estatística
     quentes = dezenas_21[:7]
     mornas = dezenas_21[7:14]
     frias = dezenas_21[14:21]
 
+    pool = dezenas_21.copy()
     jogos = []
+
     for _ in range(total_jogos):
         jogo = set()
-        jogo.update(random.sample(quentes, 5))
-        jogo.update(random.sample(mornas, 5))
-        jogo.update(random.sample(frias, 5))
+
+        def pegar(grupo, qtd):
+            if len(grupo) >= qtd:
+                return random.sample(grupo, qtd)
+            faltam = qtd - len(grupo)
+            complemento = random.sample(
+                [n for n in pool if n not in grupo],
+                faltam
+            )
+            return grupo + complemento
+
+        jogo.update(pegar(quentes, 5))
+        jogo.update(pegar(mornas, 5))
+        jogo.update(pegar(frias, 5))
+
+        while len(jogo) < 15:
+            jogo.add(random.choice(pool))
+
         jogos.append(sorted(jogo))
 
     return jogos, {
@@ -204,4 +230,3 @@ def gerar_historico_21_automatico(historico, total_jogos=8):
         "mornas": mornas,
         "frias": frias
     }
-
