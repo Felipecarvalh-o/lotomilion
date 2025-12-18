@@ -1,11 +1,10 @@
 # ======================================================
-# Lotomilion Estrategista — Login Premium Centralizado
+# Lotomilion Estrategista — Login Premium FINAL
 # ======================================================
 
 import streamlit as st
 import streamlit.components.v1 as components
 import random
-
 from auth import verificar_usuario
 
 # ======================================================
@@ -32,21 +31,17 @@ if "logado" not in st.session_state:
 
 st.markdown("""
 <style>
-/* Remove espaços extras do Streamlit */
+html, body, [data-testid="stApp"] {
+    height: 100%;
+}
+
 [data-testid="stAppViewContainer"] > .main {
-    padding-top: 0;
+    padding: 0;
 }
 
-/* Fundo */
-[data-testid="stApp"] {
-    background: radial-gradient(circle at top, #1B0A2A, #050007);
-    color: #EDE9FE;
-}
-
-/* Garante que inputs fiquem acima do fundo */
 input, button {
     position: relative;
-    z-index: 20;
+    z-index: 10;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -57,35 +52,27 @@ input, button {
 
 if not st.session_state.logado:
 
-    # -------- FUNDO FULLSCREEN --------
+    # -------- FUNDO ANIMADO FIXO --------
     elementos = []
 
-    for _ in range(22):
+    for _ in range(26):
         elementos.append(
-            f"""
-            <div class="float trevo"
-                 style="
-                    left:{random.randint(0,100)}%;
-                    font-size:{random.choice([36,48,60,72])}px;
-                    animation-delay:{random.randint(0,40)}s;
-                    animation-duration:{random.randint(24,40)}s;">
+            f"""<div class="float trevo"
+                 style="left:{random.randint(0,100)}%;
+                        font-size:{random.choice([32,44,56,68])}px;
+                        animation-duration:{random.randint(22,36)}s;">
                 🍀
-            </div>
-            """
+            </div>"""
         )
 
-    for _ in range(16):
+    for _ in range(18):
         elementos.append(
-            f"""
-            <div class="float numero {random.choice(['n1','n2','n3','n4'])}"
-                 style="
-                    left:{random.randint(0,100)}%;
-                    font-size:{random.choice([32,40,48])}px;
-                    animation-delay:{random.randint(0,45)}s;
-                    animation-duration:{random.randint(26,44)}s;">
+            f"""<div class="float numero {random.choice(['n1','n2','n3','n4'])}"
+                 style="left:{random.randint(0,100)}%;
+                        font-size:{random.choice([28,36,44])}px;
+                        animation-duration:{random.randint(24,38)}s;">
                 {random.choice(['01','03','07','10','13','15','18','21','25'])}
-            </div>
-            """
+            </div>"""
         )
 
     components.html(
@@ -96,29 +83,29 @@ if not st.session_state.logado:
             inset: 0;
             width: 100vw;
             height: 100vh;
-            z-index: 1;
-            pointer-events: none;
             overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
+            background: radial-gradient(circle at top, #1B0A2A, #050007);
         }}
 
         .float {{
             position: absolute;
             bottom: -120px;
-            opacity: 0.16;
+            opacity: 0.18;
             animation-name: subir;
             animation-timing-function: linear;
             animation-iteration-count: infinite;
-            filter: blur(0.3px);
         }}
 
         .trevo {{
             color: #A855F7;
-            text-shadow: 0 0 26px rgba(168,85,247,.85);
+            text-shadow: 0 0 26px rgba(168,85,247,.9);
         }}
 
         .numero {{
             font-weight: 800;
-            text-shadow: 0 0 16px rgba(255,255,255,.2);
+            text-shadow: 0 0 16px rgba(255,255,255,.25);
         }}
 
         .n1 {{ color:#FACC15; }}
@@ -127,15 +114,8 @@ if not st.session_state.logado:
         .n4 {{ color:#EC4899; }}
 
         @keyframes subir {{
-            from {{ transform: translateY(0) rotate(0deg); }}
-            to {{ transform: translateY(-160vh) rotate(360deg); }}
-        }}
-
-        @media (max-width: 768px) {{
-            .float {{
-                opacity: 0.12;
-                filter: blur(0.6px);
-            }}
+            from {{ transform: translateY(0); }}
+            to {{ transform: translateY(-160vh); }}
         }}
         </style>
 
@@ -146,7 +126,7 @@ if not st.session_state.logado:
         height=0
     )
 
-    # -------- CONTAINER CENTRAL --------
+    # -------- LOGIN CENTRAL --------
     st.markdown("""
     <div style="
         min-height:100vh;
@@ -154,25 +134,23 @@ if not st.session_state.logado:
         align-items:center;
         justify-content:center;
         position:relative;
-        z-index:10;
+        z-index:5;
     ">
         <div style="
             width:100%;
             max-width:420px;
-            padding:34px;
-            border-radius:28px;
+            padding:36px;
+            border-radius:26px;
             background:linear-gradient(160deg,#14001F,#1F0030);
-            box-shadow:0 0 90px rgba(168,85,247,.45);
+            box-shadow:0 0 100px rgba(168,85,247,.55);
             border:1px solid #2E1065;
             text-align:center;
         ">
-            <h2 style="margin-bottom:6px;">🍀 Lotomilion Estrategista</h2>
-            <p style="opacity:.85;">
+            <h2>🍀 Lotomilion Estrategista</h2>
+            <p style="opacity:.85;margin-bottom:20px;">
                 Inteligência estatística aplicada à Lotofácil<br>
                 <b>Acesso Premium</b>
             </p>
-        </div>
-    </div>
     """, unsafe_allow_html=True)
 
     email = st.text_input(
@@ -192,6 +170,8 @@ if not st.session_state.logado:
         st.rerun()
 
     st.caption("🔒 Sistema estatístico • Não garante premiação")
+
+    st.markdown("</div></div>", unsafe_allow_html=True)
     st.stop()
 
 # ======================================================
