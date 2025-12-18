@@ -1,9 +1,10 @@
 # ======================================================
-# Lotomilion Estrategista — Login Premium (ESTÁTICO FINAL)
+# Lotomilion Estrategista — Login Premium (ESTÁTICO FIXO)
 # ======================================================
 
 import streamlit as st
 import random
+import streamlit.components.v1 as components
 from auth import verificar_usuario
 
 # ======================================================
@@ -25,65 +26,53 @@ if "logado" not in st.session_state:
     st.session_state.email = None
 
 # ======================================================
-# BACKGROUND ESTÁTICO (SEGURO)
+# FUNDO ESTÁTICO (IFRAME – NÃO VAZA)
 # ======================================================
 
-elementos = ""
+bg_items = ""
 
-# Trevos
 for _ in range(18):
-    elementos += f"""
-    <div class="bg-item trevo"
-         style="
-            top:{random.randint(2,95)}%;
-            left:{random.randint(2,95)}%;
-            font-size:{random.choice([22,28,34,40])}px;">
+    bg_items += f"""
+    <div class="item trevo"
+         style="top:{random.randint(2,95)}%;
+                left:{random.randint(2,95)}%;
+                font-size:{random.choice([22,28,34,40])}px;">
         🍀
     </div>
     """
 
-# Números
 for _ in range(16):
-    elementos += f"""
-    <div class="bg-item numero"
-         style="
-            top:{random.randint(2,95)}%;
-            left:{random.randint(2,95)}%;
-            font-size:{random.choice([18,22,26,30])}px;">
+    bg_items += f"""
+    <div class="item numero"
+         style="top:{random.randint(2,95)}%;
+                left:{random.randint(2,95)}%;
+                font-size:{random.choice([18,22,26,30])}px;">
         {random.choice(['01','03','05','07','10','13','15','18','21','25'])}
     </div>
     """
 
-st.markdown(
+components.html(
 f"""
+<html>
+<head>
 <style>
-
-/* RESET STREAMLIT */
-html, body, [data-testid="stApp"] {{
-    height: 100%;
-}}
-
-[data-testid="stAppViewContainer"] > .main {{
+html, body {{
+    margin: 0;
     padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
 }}
 
-header, footer {{
-    display: none;
-}}
-
-/* FUNDO */
 .bg {{
     position: fixed;
     inset: 0;
-    z-index: 0;
-    overflow: hidden;
     background:
         radial-gradient(circle at top, rgba(168,85,247,.35), transparent 55%),
         linear-gradient(180deg, #12001B, #050007);
 }}
 
-/* ELEMENTOS */
-.bg-item {{
+.item {{
     position: absolute;
     opacity: 0.18;
     pointer-events: none;
@@ -99,19 +88,35 @@ header, footer {{
     font-weight: 700;
     text-shadow: 0 0 16px rgba(34,197,94,.6);
 }}
+</style>
+</head>
 
-/* LOGIN */
-.login-wrapper {{
+<body>
+<div class="bg">
+    {bg_items}
+</div>
+</body>
+</html>
+""",
+height=0
+)
+
+# ======================================================
+# CSS DO STREAMLIT
+# ======================================================
+
+st.markdown("""
+<style>
+header, footer { display: none; }
+
+.login-wrapper {
     height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
-    z-index: 5;
-    padding: 16px;
-}}
+}
 
-.login-card {{
+.login-card {
     width: 100%;
     max-width: 420px;
     padding: 28px;
@@ -121,46 +126,21 @@ header, footer {{
     border: 1px solid rgba(168,85,247,.45);
     box-shadow: 0 0 120px rgba(168,85,247,.9);
     text-align: center;
-}}
+}
 
-.login-title {{
-    font-size: 26px;
-    font-weight: 700;
-    margin-bottom: 6px;
-}}
-
-.login-sub {{
-    font-size: 14px;
-    opacity: .85;
-    margin-bottom: 16px;
-}}
-
-div[data-testid="stTextInput"] input {{
+div[data-testid="stTextInput"] input {
     background: rgba(255,255,255,.08);
     border-radius: 10px;
-}}
+}
 
-div[data-testid="stButton"] button {{
+div[data-testid="stButton"] button {
     background: linear-gradient(90deg,#7C3AED,#A855F7);
     border: none;
     border-radius: 12px;
     font-weight: bold;
-}}
-
-.login-caption {{
-    margin-top: 14px;
-    font-size: 12px;
-    opacity: .6;
-}}
-
+}
 </style>
-
-<div class="bg">
-    {elementos}
-</div>
-""",
-unsafe_allow_html=True
-)
+""", unsafe_allow_html=True)
 
 # ======================================================
 # LOGIN
@@ -168,24 +148,12 @@ unsafe_allow_html=True
 
 if not st.session_state.logado:
 
-    st.markdown(
-    """
-    <div class="login-wrapper">
-        <div class="login-card">
-            <div class="login-title">🍀 Lotomilion Estrategista</div>
-            <div class="login-sub">
-                Inteligência estatística aplicada à Lotofácil<br>
-                <b>Acesso Premium</b>
-            </div>
-    """,
-    unsafe_allow_html=True
-    )
+    st.markdown('<div class="login-wrapper"><div class="login-card">', unsafe_allow_html=True)
 
-    email = st.text_input(
-        "",
-        placeholder="seu@email.com",
-        label_visibility="collapsed"
-    )
+    st.markdown("## 🍀 Lotomilion Estrategista")
+    st.caption("Inteligência estatística aplicada à Lotofácil — **Acesso Premium**")
+
+    email = st.text_input("", placeholder="seu@email.com", label_visibility="collapsed")
 
     if st.button("Entrar no Painel Premium", use_container_width=True):
         ok, msg = verificar_usuario(email)
@@ -197,21 +165,13 @@ if not st.session_state.logado:
         st.session_state.email = email
         st.rerun()
 
-    st.markdown(
-    """
-            <div class="login-caption">
-                🔒 Sistema estatístico • Não garante premiação
-            </div>
-        </div>
-    </div>
-    """,
-    unsafe_allow_html=True
-    )
+    st.caption("🔒 Sistema estatístico • Não garante premiação")
 
+    st.markdown("</div></div>", unsafe_allow_html=True)
     st.stop()
 
 # ======================================================
-# APP PRINCIPAL
+# APP
 # ======================================================
 
 st.title("🟣 Lotomilion Estrategista")
