@@ -1,5 +1,5 @@
 # ======================================================
-# Lotomilion Estrategista — Login Premium Fullscreen
+# Lotomilion Estrategista — Login Premium Centralizado
 # ======================================================
 
 import streamlit as st
@@ -32,14 +32,21 @@ if "logado" not in st.session_state:
 
 st.markdown("""
 <style>
+/* Remove espaços extras do Streamlit */
+[data-testid="stAppViewContainer"] > .main {
+    padding-top: 0;
+}
+
+/* Fundo */
 [data-testid="stApp"] {
     background: radial-gradient(circle at top, #1B0A2A, #050007);
     color: #EDE9FE;
 }
 
+/* Garante que inputs fiquem acima do fundo */
 input, button {
     position: relative;
-    z-index: 10;
+    z-index: 20;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -50,32 +57,30 @@ input, button {
 
 if not st.session_state.logado:
 
-    # -------- ELEMENTOS DE FUNDO (FULLSCREEN) --------
+    # -------- FUNDO FULLSCREEN --------
     elementos = []
 
-    # Trevos (mais quantidade)
-    for _ in range(24):
+    for _ in range(22):
         elementos.append(
             f"""
             <div class="float trevo"
                  style="
                     left:{random.randint(0,100)}%;
-                    font-size:{random.choice([36,48,60,72,90])}px;
+                    font-size:{random.choice([36,48,60,72])}px;
                     animation-delay:{random.randint(0,40)}s;
-                    animation-duration:{random.randint(22,40)}s;">
+                    animation-duration:{random.randint(24,40)}s;">
                 🍀
             </div>
             """
         )
 
-    # Números
-    for _ in range(18):
+    for _ in range(16):
         elementos.append(
             f"""
             <div class="float numero {random.choice(['n1','n2','n3','n4'])}"
                  style="
                     left:{random.randint(0,100)}%;
-                    font-size:{random.choice([32,40,48,56])}px;
+                    font-size:{random.choice([32,40,48])}px;
                     animation-delay:{random.randint(0,45)}s;
                     animation-duration:{random.randint(26,44)}s;">
                 {random.choice(['01','03','07','10','13','15','18','21','25'])}
@@ -99,7 +104,7 @@ if not st.session_state.logado:
         .float {{
             position: absolute;
             bottom: -120px;
-            opacity: 0.18;
+            opacity: 0.16;
             animation-name: subir;
             animation-timing-function: linear;
             animation-iteration-count: infinite;
@@ -108,12 +113,12 @@ if not st.session_state.logado:
 
         .trevo {{
             color: #A855F7;
-            text-shadow: 0 0 28px rgba(168,85,247,.9);
+            text-shadow: 0 0 26px rgba(168,85,247,.85);
         }}
 
         .numero {{
             font-weight: 800;
-            text-shadow: 0 0 18px rgba(255,255,255,.25);
+            text-shadow: 0 0 16px rgba(255,255,255,.2);
         }}
 
         .n1 {{ color:#FACC15; }}
@@ -122,12 +127,8 @@ if not st.session_state.logado:
         .n4 {{ color:#EC4899; }}
 
         @keyframes subir {{
-            from {{
-                transform: translateY(0) rotate(0deg);
-            }}
-            to {{
-                transform: translateY(-160vh) rotate(360deg);
-            }}
+            from {{ transform: translateY(0) rotate(0deg); }}
+            to {{ transform: translateY(-160vh) rotate(360deg); }}
         }}
 
         @media (max-width: 768px) {{
@@ -142,28 +143,35 @@ if not st.session_state.logado:
             {''.join(elementos)}
         </div>
         """,
-        height=800
+        height=0
     )
 
-    # -------- CARD LOGIN --------
+    # -------- CONTAINER CENTRAL --------
     st.markdown("""
     <div style="
-        max-width:420px;
-        margin:8vh auto 0 auto;
-        padding:34px;
-        border-radius:28px;
-        background:linear-gradient(160deg,#14001F,#1F0030);
-        box-shadow:0 0 90px rgba(168,85,247,.45);
-        border:1px solid #2E1065;
-        text-align:center;
+        min-height:100vh;
+        display:flex;
+        align-items:center;
+        justify-content:center;
         position:relative;
         z-index:10;
     ">
-        <h2 style="margin-bottom:6px;">🍀 Lotomilion Estrategista</h2>
-        <p style="opacity:.85;">
-            Inteligência estatística aplicada à Lotofácil<br>
-            <b>Acesso Premium</b>
-        </p>
+        <div style="
+            width:100%;
+            max-width:420px;
+            padding:34px;
+            border-radius:28px;
+            background:linear-gradient(160deg,#14001F,#1F0030);
+            box-shadow:0 0 90px rgba(168,85,247,.45);
+            border:1px solid #2E1065;
+            text-align:center;
+        ">
+            <h2 style="margin-bottom:6px;">🍀 Lotomilion Estrategista</h2>
+            <p style="opacity:.85;">
+                Inteligência estatística aplicada à Lotofácil<br>
+                <b>Acesso Premium</b>
+            </p>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
