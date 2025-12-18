@@ -1,5 +1,5 @@
 # ======================================================
-# Lotomilion Estrategista — Login Premium (FINAL 100%)
+# Lotomilion Estrategista — Login Premium (FINAL CORRIGIDO)
 # ======================================================
 
 import streamlit as st
@@ -32,22 +32,26 @@ elementos = []
 
 for _ in range(22):
     elementos.append(
-        f"""<div class="float trevo"
+        f"""
+        <div class="float trevo"
              style="left:{random.randint(0,100)}%;
                     font-size:{random.choice([32,44,56])}px;
                     animation-duration:{random.randint(28,46)}s;">
             🍀
-        </div>"""
+        </div>
+        """
     )
 
 for _ in range(16):
     elementos.append(
-        f"""<div class="float numero {random.choice(['n1','n2','n3','n4'])}"
+        f"""
+        <div class="float numero {random.choice(['n1','n2','n3','n4'])}"
              style="left:{random.randint(0,100)}%;
                     font-size:{random.choice([26,34,42])}px;
                     animation-duration:{random.randint(30,48)}s;">
             {random.choice(['01','03','05','07','10','13','15','18','21','25'])}
-        </div>"""
+        </div>
+        """
     )
 
 st.markdown(f"""
@@ -97,22 +101,24 @@ header, footer {{
 .n3 {{ color:#22C55E; }}
 .n4 {{ color:#EC4899; }}
 
-/* LOGIN WRAPPER */
+/* LOGIN WRAPPER — FIX DEFINITIVO */
 .login-wrapper {{
-    min-height: 100vh;
+    height: 100vh;
     display: flex;
-    align-items: center;
+    align-items: flex-start;   /* evita scroll */
     justify-content: center;
+    padding-top: 12vh;         /* distância 0.5 */
+    padding-left: 12px;
+    padding-right: 12px;
     position: relative;
     z-index: 5;
-    padding: 12px;
 }}
 
 /* CARD */
 .login-card {{
     width: 100%;
     max-width: 420px;
-    padding: 30px 26px 26px 26px;
+    padding: 30px 26px 26px;
     border-radius: 28px;
     background: rgba(24,0,38,.68);
     backdrop-filter: blur(16px);
@@ -134,7 +140,7 @@ header, footer {{
     margin-bottom: 14px;
 }}
 
-/* AJUSTE INPUT STREAMLIT */
+/* INPUT */
 div[data-testid="stTextInput"] {{
     margin: 0 !important;
 }}
