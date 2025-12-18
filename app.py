@@ -20,14 +20,14 @@ st.set_page_config(
 # ======================================================
 
 st.session_state.setdefault("modo", None)
-
 st.session_state.setdefault("estrategia", None)
 st.session_state.setdefault("jogos", [])
-st.session_state.setdefault("classificacao", None)
+st.session_state.setdefault("resultado_real", [])
+st.session_state.setdefault("comparar", False)
 st.session_state.setdefault("nome_estrategia", None)
 
 # ======================================================
-# ESTILO
+# ESTILO GLOBAL
 # ======================================================
 
 st.markdown("""
@@ -36,7 +36,7 @@ header, footer { display: none; }
 
 [data-testid="stApp"] {
     background:
-        radial-gradient(circle at center, rgba(168,85,247,.18), transparent 55%),
+        radial-gradient(circle at center, rgba(168,85,247,.22), transparent 55%),
         linear-gradient(180deg, #050007, #0B0B12);
 }
 
@@ -51,7 +51,54 @@ div[data-testid="stButton"] button {
     box-shadow: 0 10px 30px rgba(168,85,247,.45);
 }
 
-/* NUMEROS */
+/* HERO */
+.hero-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: 18vh;
+}
+
+.hero {
+    position: relative;
+    max-width: 820px;
+    padding: 64px 60px;
+    text-align: center;
+    border-radius: 36px;
+    background: linear-gradient(180deg, #2a0045, #12001f);
+    box-shadow:
+        0 50px 140px rgba(0,0,0,.9),
+        inset 0 0 120px rgba(168,85,247,.25);
+}
+
+.hero::before {
+    content: "";
+    position: absolute;
+    inset: -80px;
+    background: radial-gradient(circle, rgba(168,85,247,.45), transparent 70%);
+    filter: blur(90px);
+    z-index: -1;
+}
+
+.hero h1 {
+    font-size: 44px;
+    font-weight: 900;
+    margin-bottom: 16px;
+}
+
+.hero p {
+    font-size: 16px;
+    opacity: .9;
+}
+
+/* UI */
+.badge {
+    background:#2A0934;
+    padding:10px 16px;
+    border-radius:16px;
+    font-size:14px;
+    margin-bottom:14px;
+}
+
 .numero {
     width: 56px;
     height: 56px;
@@ -68,32 +115,36 @@ div[data-testid="stButton"] button {
         0 8px 20px rgba(168,85,247,.45);
 }
 
-.badge {
-    background:#2A0934;
-    padding:10px 16px;
-    border-radius:16px;
-    font-size:14px;
-    margin-bottom:14px;
+.acerto {
+    border: 2px solid #00E676;
+    box-shadow: 0 0 18px rgba(0,230,118,.8);
 }
 </style>
 """, unsafe_allow_html=True)
 
 # ======================================================
-# TELA INICIAL
+# HOME / BANNER
 # ======================================================
 
 if st.session_state.modo is None:
-    st.title("🍀 Lotomilion Estrategista")
-    st.write("Inteligência estatística aplicada à Lotofácil")
+    st.markdown("""
+    <div class="hero-wrapper">
+        <div class="hero">
+            <h1>🍀 Lotomilion Estrategista</h1>
+            <p>
+                Inteligência estatística aplicada à Lotofácil.<br>
+                Teste gratuitamente no modo demonstração.
+            </p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    c1, c2 = st.columns(2)
-    with c1:
-        if st.button("🚀 Modo Demonstração", use_container_width=True):
-            st.session_state.modo = "demo"
-            st.rerun()
+    st.markdown("<br><br>", unsafe_allow_html=True)
+
+    c1, c2, c3 = st.columns([2,3,2])
     with c2:
-        if st.button("🔒 Modo PRO", use_container_width=True):
-            st.session_state.modo = "pro"
+        if st.button("🚀 Entrar no modo Demonstração", use_container_width=True):
+            st.session_state.modo = "demo"
             st.rerun()
 
     st.stop()
@@ -103,7 +154,6 @@ if st.session_state.modo is None:
 # ======================================================
 
 st.sidebar.title("🍀 Lotomilion")
-
 if st.session_state.modo == "demo":
     st.sidebar.warning("🔓 Modo Demonstração")
 
@@ -120,30 +170,20 @@ if menu == "📊 Estratégias Avançadas":
 
     st.title("📊 Estratégias Avançadas — Lotofácil")
 
-    # ============================
-    # ESCOLHA DA ESTRATÉGIA
-    # ============================
+    # ESCOLHA
     if st.session_state.estrategia is None:
-        st.subheader("🎯 Escolha a estratégia")
-
         c1, c2 = st.columns(2)
         with c1:
             if st.button("🎯 Fechamento 21", use_container_width=True):
                 st.session_state.estrategia = "fechamento"
                 st.session_state.nome_estrategia = "Fechamento 21"
-                st.session_state.jogos = []
                 st.rerun()
-
         with c2:
             if st.button("📊 Histórico Real", use_container_width=True):
                 st.session_state.estrategia = "historico"
                 st.session_state.nome_estrategia = "Histórico Real"
-                st.session_state.jogos = []
                 st.rerun()
 
-    # ============================
-    # ESTRATÉGIA ATIVA
-    # ============================
     else:
         st.markdown(
             f"<div class='badge'>📌 Estratégia ativa: <b>{st.session_state.nome_estrategia}</b></div>",
@@ -153,12 +193,11 @@ if menu == "📊 Estratégias Avançadas":
         if st.button("🔄 Trocar estratégia"):
             st.session_state.estrategia = None
             st.session_state.jogos = []
-            st.session_state.classificacao = None
+            st.session_state.comparar = False
             st.rerun()
 
-        # ---------- FECHAMENTO ----------
+        # ================= FECHAMENTO =================
         if st.session_state.estrategia == "fechamento":
-
             fixas = st.text_area("🔒 9 dezenas fixas")
             variaveis = st.text_area("🔄 12 dezenas variáveis")
 
@@ -166,20 +205,15 @@ if menu == "📊 Estratégias Avançadas":
                 dezenas = sorted(
                     set(converter_lista(fixas) + converter_lista(variaveis))
                 )
-
                 if len(dezenas) != 21:
                     st.error("Use exatamente 21 dezenas.")
                     st.stop()
 
                 jogos = gerar_fechamento_21_8(dezenas)
+                st.session_state.jogos = [sorted(j[:15]) for j in jogos]
 
-                st.session_state.jogos = [
-                    sorted(jogo[:15]) for jogo in jogos
-                ]
-
-        # ---------- HISTÓRICO ----------
+        # ================= HISTÓRICO =================
         if st.session_state.estrategia == "historico":
-
             if st.button("🧠 Gerar Jogos"):
                 historico = carregar_historico(qtd=50)
 
@@ -193,16 +227,21 @@ if menu == "📊 Estratégias Avançadas":
                 )[:21]
 
                 jogos, _ = gerar_jogos_historico_real(dezenas_base, historico)
+                st.session_state.jogos = [sorted(j[:15]) for j in jogos]
 
-                st.session_state.jogos = [
-                    sorted(jogo[:15]) for jogo in jogos
-                ]
+        # ================= RESULTADO REAL =================
+        st.subheader("📥 Consultar sorteio real (opcional)")
+        resultado_txt = st.text_input("Digite as 15 dezenas sorteadas")
 
-    # ============================
-    # EXIBIÇÃO DOS JOGOS
-    # ============================
+        if st.button("📊 Comparar com jogos"):
+            resultado = converter_lista(resultado_txt)
+            if len(resultado) == 15:
+                st.session_state.resultado_real = resultado
+                st.session_state.comparar = True
+
+    # ================= EXIBIÇÃO =================
     if st.session_state.jogos:
-        st.subheader("🎲 Jogos Sugeridos (15 dezenas)")
+        st.subheader("🎲 Jogos Gerados")
 
         limite = 2 if st.session_state.modo == "demo" else len(st.session_state.jogos)
 
@@ -210,8 +249,12 @@ if menu == "📊 Estratégias Avançadas":
             for i in range(0, 15, 5):
                 cols = st.columns(5)
                 for c, n in zip(cols, jogo[i:i+5]):
+                    acerto = (
+                        st.session_state.comparar and
+                        n in st.session_state.resultado_real
+                    )
                     c.markdown(
-                        f"<div class='numero'>{n:02d}</div>",
+                        f"<div class='numero {'acerto' if acerto else ''}'>{n:02d}</div>",
                         unsafe_allow_html=True
                     )
 
@@ -230,4 +273,7 @@ elif menu == "🎯 Gerador Simples":
         for i in range(0, 15, 5):
             cols = st.columns(5)
             for c, n in zip(cols, jogo[i:i+5]):
-                c.markdown(f"<div class='numero'>{n:02d}</div>", unsafe_allow_html=True)
+                c.markdown(
+                    f"<div class='numero'>{n:02d}</div>",
+                    unsafe_allow_html=True
+                )
