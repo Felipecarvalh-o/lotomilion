@@ -20,7 +20,7 @@ st.set_page_config(
 # ======================================================
 
 st.session_state.setdefault("autenticado", False)
-st.session_state.setdefault("email", None)
+st.session_state.setdefault("email", "")
 
 st.session_state.setdefault("estrategia", None)
 st.session_state.setdefault("nome_estrategia", None)
@@ -30,7 +30,7 @@ st.session_state.setdefault("resultado_oficial", [])
 st.session_state.setdefault("comparar", False)
 
 # ======================================================
-# ESTILO PREMIUM (UX RESTAURADO)
+# ESTILO PREMIUM
 # ======================================================
 
 st.markdown("""
@@ -77,10 +77,7 @@ header, footer { display:none; }
     box-shadow:0 0 22px rgba(0,230,118,.9);
 }
 
-.trofeu{
-    font-size:20px;
-    margin-left:6px;
-}
+.trofeu{ margin-left:6px; }
 
 .badge{
     background:#2A0934;
@@ -92,7 +89,7 @@ header, footer { display:none; }
 """, unsafe_allow_html=True)
 
 # ======================================================
-# LOGIN POR EMAIL (ÚNICO ACESSO)
+# LOGIN (CORRIGIDO COM FORM)
 # ======================================================
 
 if not st.session_state.autenticado:
@@ -105,18 +102,19 @@ if not st.session_state.autenticado:
     </div>
     """, unsafe_allow_html=True)
 
-    email = st.text_input("📧 Digite seu email")
+    with st.form("login_form", clear_on_submit=False):
+        email = st.text_input("📧 Digite seu email")
+        entrar = st.form_submit_button("🔓 Entrar")
 
-    if st.button("🔓 Entrar"):
-        # MOCK – depois conecta no banco
-        emails_ativos = ["teste@pro.com", "admin@lotomilion.com"]
-
-        if email in emails_ativos:
+    if entrar:
+        if not email or "@" not in email:
+            st.error("Digite um email válido")
+        else:
+            # 🔓 LIBERA QUALQUER EMAIL (BANCO ENTRA DEPOIS)
             st.session_state.autenticado = True
             st.session_state.email = email
+            st.success("Acesso liberado")
             st.rerun()
-        else:
-            st.error("❌ Email não encontrado ou plano inativo")
 
     st.stop()
 
@@ -138,18 +136,18 @@ menu = st.sidebar.radio(
 
 st.markdown("### 🏆 Comparar com Sorteio Oficial")
 
-entrada = st.text_input(
-    "Digite as 15 dezenas do sorteio oficial (ex: 1,2,3...)"
-)
+with st.form("resultado_form"):
+    entrada = st.text_input("Digite as 15 dezenas do sorteio oficial")
+    comparar = st.form_submit_button("📊 Aplicar Resultado")
 
-if st.button("📊 Comparar Resultado"):
+if comparar:
     dezenas = converter_lista(entrada)
     if len(dezenas) != 15:
         st.error("Digite exatamente 15 dezenas")
     else:
         st.session_state.resultado_oficial = dezenas
         st.session_state.comparar = True
-        st.success("Resultado aplicado aos jogos")
+        st.success("Resultado aplicado")
 
 st.divider()
 
@@ -185,7 +183,6 @@ if menu == "📊 Estratégias Avançadas":
 
         # ================= FECHAMENTO =================
         if st.session_state.estrategia == "fechamento":
-
             fixas = st.text_area("🔒 9 fixas")
             variaveis = st.text_area("🔄 12 variáveis")
 
@@ -200,7 +197,6 @@ if menu == "📊 Estratégias Avançadas":
 
         # ================= HISTÓRICO =================
         if st.session_state.estrategia == "historico":
-
             if st.button("🧠 Gerar Jogo"):
                 historico = carregar_historico(qtd=50)
                 base = list(range(1, 22))
@@ -226,7 +222,6 @@ if menu == "📊 Estratégias Avançadas":
 # ======================================================
 
 elif menu == "🎯 Gerador Simples":
-
     if st.button("🎲 Gerar Jogo"):
         jogo = sorted(random.sample(range(1, 26), 15))
         for i in range(0, 15, 5):
