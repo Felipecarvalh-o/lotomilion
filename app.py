@@ -21,14 +21,10 @@ st.set_page_config(
 
 st.session_state.setdefault("modo", None)
 
-defaults = {
-    "estrategia": None,
-    "jogos": [],
-    "classificacao": None,
-    "nome_estrategia": None
-}
-for k, v in defaults.items():
-    st.session_state.setdefault(k, v)
+st.session_state.setdefault("estrategia", None)
+st.session_state.setdefault("jogos", [])
+st.session_state.setdefault("classificacao", None)
+st.session_state.setdefault("nome_estrategia", None)
 
 # ======================================================
 # ESTILO
@@ -71,6 +67,14 @@ div[data-testid="stButton"] button {
         inset 0 0 12px rgba(255,255,255,.15),
         0 8px 20px rgba(168,85,247,.45);
 }
+
+.badge {
+    background:#2A0934;
+    padding:10px 16px;
+    border-radius:16px;
+    font-size:14px;
+    margin-bottom:14px;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -100,6 +104,9 @@ if st.session_state.modo is None:
 
 st.sidebar.title("🍀 Lotomilion")
 
+if st.session_state.modo == "demo":
+    st.sidebar.warning("🔓 Modo Demonstração")
+
 menu = st.sidebar.radio(
     "Menu",
     ["📊 Estratégias Avançadas", "🎯 Gerador Simples"]
@@ -111,67 +118,89 @@ menu = st.sidebar.radio(
 
 if menu == "📊 Estratégias Avançadas":
 
-    if not st.session_state.estrategia:
+    st.title("📊 Estratégias Avançadas — Lotofácil")
+
+    # ============================
+    # ESCOLHA DA ESTRATÉGIA
+    # ============================
+    if st.session_state.estrategia is None:
+        st.subheader("🎯 Escolha a estratégia")
+
         c1, c2 = st.columns(2)
         with c1:
             if st.button("🎯 Fechamento 21", use_container_width=True):
                 st.session_state.estrategia = "fechamento"
+                st.session_state.nome_estrategia = "Fechamento 21"
+                st.session_state.jogos = []
                 st.rerun()
+
         with c2:
             if st.button("📊 Histórico Real", use_container_width=True):
                 st.session_state.estrategia = "historico"
+                st.session_state.nome_estrategia = "Histórico Real"
+                st.session_state.jogos = []
                 st.rerun()
 
-    # ==============================
-    # FECHAMENTO
-    # ==============================
-    if st.session_state.estrategia == "fechamento":
+    # ============================
+    # ESTRATÉGIA ATIVA
+    # ============================
+    else:
+        st.markdown(
+            f"<div class='badge'>📌 Estratégia ativa: <b>{st.session_state.nome_estrategia}</b></div>",
+            unsafe_allow_html=True
+        )
 
-        fixas = st.text_area("9 dezenas fixas")
-        variaveis = st.text_area("12 dezenas variáveis")
+        if st.button("🔄 Trocar estratégia"):
+            st.session_state.estrategia = None
+            st.session_state.jogos = []
+            st.session_state.classificacao = None
+            st.rerun()
 
-        if st.button("🧠 Gerar Jogos"):
-            dezenas = sorted(set(converter_lista(fixas) + converter_lista(variaveis)))
+        # ---------- FECHAMENTO ----------
+        if st.session_state.estrategia == "fechamento":
 
-            if len(dezenas) != 21:
-                st.error("Use exatamente 21 dezenas.")
-                st.stop()
+            fixas = st.text_area("🔒 9 dezenas fixas")
+            variaveis = st.text_area("🔄 12 dezenas variáveis")
 
-            jogos = gerar_fechamento_21_8(dezenas)
+            if st.button("🧠 Gerar Jogos"):
+                dezenas = sorted(
+                    set(converter_lista(fixas) + converter_lista(variaveis))
+                )
 
-            # ✅ NORMALIZA PARA 15
-            st.session_state.jogos = [
-                sorted(jogo[:15]) for jogo in jogos
-            ]
+                if len(dezenas) != 21:
+                    st.error("Use exatamente 21 dezenas.")
+                    st.stop()
 
-    # ==============================
-    # HISTÓRICO
-    # ==============================
-    elif st.session_state.estrategia == "historico":
+                jogos = gerar_fechamento_21_8(dezenas)
 
-        if st.button("🧠 Gerar Jogos"):
-            historico = carregar_historico(qtd=50)
+                st.session_state.jogos = [
+                    sorted(jogo[:15]) for jogo in jogos
+                ]
 
-            base_fake = list(range(1, 22))
-            _, ranking = gerar_jogos_historico_real(base_fake, historico)
+        # ---------- HISTÓRICO ----------
+        if st.session_state.estrategia == "historico":
 
-            dezenas_base = (
-                ranking["quentes"]
-                + ranking["mornas"]
-                + ranking["frias"]
-            )[:21]
+            if st.button("🧠 Gerar Jogos"):
+                historico = carregar_historico(qtd=50)
 
-            jogos, _ = gerar_jogos_historico_real(dezenas_base, historico)
+                base_fake = list(range(1, 22))
+                _, ranking = gerar_jogos_historico_real(base_fake, historico)
 
-            # ✅ NORMALIZA PARA 15
-            st.session_state.jogos = [
-                sorted(jogo[:15]) for jogo in jogos
-            ]
+                dezenas_base = (
+                    ranking["quentes"] +
+                    ranking["mornas"] +
+                    ranking["frias"]
+                )[:21]
 
-    # ==================================================
-    # EXIBIÇÃO
-    # ==================================================
+                jogos, _ = gerar_jogos_historico_real(dezenas_base, historico)
 
+                st.session_state.jogos = [
+                    sorted(jogo[:15]) for jogo in jogos
+                ]
+
+    # ============================
+    # EXIBIÇÃO DOS JOGOS
+    # ============================
     if st.session_state.jogos:
         st.subheader("🎲 Jogos Sugeridos (15 dezenas)")
 
@@ -181,13 +210,21 @@ if menu == "📊 Estratégias Avançadas":
             for i in range(0, 15, 5):
                 cols = st.columns(5)
                 for c, n in zip(cols, jogo[i:i+5]):
-                    c.markdown(f"<div class='numero'>{n:02d}</div>", unsafe_allow_html=True)
+                    c.markdown(
+                        f"<div class='numero'>{n:02d}</div>",
+                        unsafe_allow_html=True
+                    )
+
+        if st.session_state.modo == "demo" and len(st.session_state.jogos) > 2:
+            st.warning("🔒 Jogos ilimitados disponíveis no plano PRO")
 
 # ======================================================
 # GERADOR SIMPLES
 # ======================================================
 
 elif menu == "🎯 Gerador Simples":
+    st.title("🎯 Gerador Simples")
+
     if st.button("Gerar jogo"):
         jogo = sorted(random.sample(range(1, 26), 15))
         for i in range(0, 15, 5):
