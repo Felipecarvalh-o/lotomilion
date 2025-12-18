@@ -28,11 +28,12 @@ defaults = {
     "classificacao": None,
     "nome_estrategia": None
 }
+
 for k, v in defaults.items():
     st.session_state.setdefault(k, v)
 
 # ======================================================
-# ESTILO
+# ESTILO GLOBAL (PREMIUM)
 # ======================================================
 
 st.markdown("""
@@ -40,13 +41,46 @@ st.markdown("""
 header, footer { display: none; }
 
 [data-testid="stApp"] {
-    background: linear-gradient(180deg, #0B0B12, #050007);
+    background: radial-gradient(circle at top, #1a002b, #050007 70%);
+}
+
+/* HERO */
+.hero {
+    max-width: 900px;
+    margin: 18vh auto;
+    padding: 60px 50px;
+    text-align: center;
+    border-radius: 32px;
+    background: linear-gradient(180deg, rgba(40,0,70,.9), rgba(10,0,20,.95));
+    box-shadow:
+        0 0 120px rgba(168,85,247,.65),
+        inset 0 0 60px rgba(168,85,247,.15);
+}
+
+.hero h1 {
+    font-size: 42px;
+    font-weight: 900;
+}
+
+.hero p {
+    font-size: 16px;
+    opacity: .9;
+    margin: 20px 0 34px;
+}
+
+.hero-buttons {
+    display: flex;
+    gap: 18px;
+    justify-content: center;
+    flex-wrap: wrap;
 }
 
 /* BOTÕES ROXOS */
 div[data-testid="stButton"] button {
-    height: 48px;
-    border-radius: 14px;
+    height: 52px;
+    min-width: 260px;
+    border-radius: 16px;
+    font-size: 16px;
     font-weight: 700;
     background: linear-gradient(90deg,#7C3AED,#A855F7);
     border: none;
@@ -83,29 +117,34 @@ section[data-testid="stSidebar"] div[role="radiogroup"] > label:has(input:checke
 """, unsafe_allow_html=True)
 
 # ======================================================
-# TELA INICIAL (SEM LOGIN)
+# TELA INICIAL (CENTRAL PREMIUM)
 # ======================================================
 
 if st.session_state.modo is None:
-    st.title("🍀 Lotomilion Estrategista")
-
     st.markdown("""
-    **Inteligência estatística aplicada à Lotofácil**  
-    Teste gratuitamente no modo demonstração.
-    """)
+    <div class="hero">
+        <h1>🍀 Lotomilion Estrategista</h1>
+        <p>
+            Inteligência estatística aplicada à Lotofácil<br>
+            Teste gratuitamente no modo demonstração.
+        </p>
+    """, unsafe_allow_html=True)
+
+    st.markdown("<div class='hero-buttons'>", unsafe_allow_html=True)
 
     c1, c2 = st.columns(2)
 
     with c1:
-        if st.button("🚀 Entrar no modo Demonstração", use_container_width=True):
+        if st.button("🚀 Entrar no modo Demonstração"):
             st.session_state.modo = "demo"
             st.rerun()
 
     with c2:
-        if st.button("🔒 Já sou PRO", use_container_width=True):
+        if st.button("🔒 Já sou PRO"):
             st.session_state.modo = "pro"
             st.rerun()
 
+    st.markdown("</div></div>", unsafe_allow_html=True)
     st.stop()
 
 # ======================================================
@@ -123,7 +162,7 @@ menu = st.sidebar.radio(
 )
 
 # ======================================================
-# 📊 ESTRATÉGIAS
+# 📊 ESTRATÉGIAS AVANÇADAS
 # ======================================================
 
 if menu == "📊 Estratégias Avançadas":
@@ -173,25 +212,22 @@ if menu == "📊 Estratégias Avançadas":
 
                 st.session_state.jogos = gerar_fechamento_21_8(dezenas)
 
-        # ================= HISTÓRICO REAL (CORRIGIDO) =================
+        # ================= HISTÓRICO REAL (100% SEGURO) =================
         else:
             st.info("📊 Geração automática baseada nos últimos sorteios reais.")
 
             if st.button("🧠 Gerar Jogos"):
                 historico = carregar_historico(qtd=50)
 
-                # 1️⃣ gera ranking histórico usando qualquer base válida
                 base_fake = list(range(1, 22))
                 _, ranking = gerar_jogos_historico_real(base_fake, historico)
 
-                # 2️⃣ monta as 21 melhores dezenas reais
                 dezenas_base = (
                     ranking["quentes"]
                     + ranking["mornas"]
                     + ranking["frias"]
                 )[:21]
 
-                # 3️⃣ agora sim gera os jogos corretamente
                 jogos, classificacao = gerar_jogos_historico_real(
                     dezenas_base, historico
                 )
@@ -199,6 +235,7 @@ if menu == "📊 Estratégias Avançadas":
                 st.session_state.jogos = jogos
                 st.session_state.classificacao = classificacao
 
+    # ================= RESULTADOS =================
     if st.session_state.jogos:
         st.subheader("🎲 Jogos Gerados")
 
