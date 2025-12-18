@@ -22,42 +22,84 @@ if "logado" not in st.session_state:
 if not st.session_state.logado:
     st.markdown("""
     <style>
+    body {
+        background: radial-gradient(circle at top, #1B0A2A, #050007);
+    }
+
+    .login-bg {
+        position: fixed;
+        inset: 0;
+        overflow: hidden;
+        z-index: -1;
+    }
+
+    .float {
+        position: absolute;
+        font-size: 48px;
+        opacity: 0.08;
+        animation: float 18s infinite linear;
+        color: #9C27B0;
+    }
+
+    @keyframes float {
+        from { transform: translateY(110vh) rotate(0deg); }
+        to { transform: translateY(-120vh) rotate(360deg); }
+    }
+
     .login-box {
-        background:#0F0F0F;
-        padding:30px;
-        border-radius:22px;
-        border:1px solid #2A0934;
-        max-width:420px;
-        margin:auto;
-        text-align:center;
+        background: linear-gradient(145deg, #14001F, #1F0030);
+        padding: 34px;
+        border-radius: 26px;
+        border: 1px solid #3A0A52;
+        max-width: 420px;
+        margin: 12vh auto;
+        text-align: center;
+        box-shadow: 0 0 40px rgba(156,39,176,.35);
     }
+
     .login-title {
-        font-size:26px;
-        font-weight:800;
-        color:#9C27B0;
-        margin-bottom:10px;
+        font-size: 28px;
+        font-weight: 900;
+        color: #E1BEE7;
+        margin-bottom: 6px;
+        letter-spacing: .5px;
     }
+
     .login-sub {
-        color:#AAA;
-        font-size:14px;
-        margin-bottom:20px;
+        color: #B388EB;
+        font-size: 14px;
+        margin-bottom: 22px;
+    }
+
+    .login-foot {
+        font-size: 12px;
+        color: #888;
+        margin-top: 16px;
     }
     </style>
+
+    <div class="login-bg">
+        <div class="float" style="left:10%">🍀</div>
+        <div class="float" style="left:30%; animation-delay:2s;">07</div>
+        <div class="float" style="left:50%; animation-delay:6s;">🍀</div>
+        <div class="float" style="left:70%; animation-delay:4s;">13</div>
+        <div class="float" style="left:85%; animation-delay:8s;">🍀</div>
+    </div>
     """, unsafe_allow_html=True)
 
     st.markdown("""
     <div class="login-box">
-        <div class="login-title">🔐 Acesso Premium</div>
+        <div class="login-title">🍀 Lotomilion Estrategista</div>
         <div class="login-sub">
-            Entre com o <b>email usado na compra</b><br>
-            para acessar o Lotomilion Estrategista
+            Inteligência estatística aplicada à Lotofácil<br>
+            <b>Acesso exclusivo para membros</b>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-    email = st.text_input("📧 Email da compra")
+    email = st.text_input("📧 Email usado na compra")
 
-    if st.button("🚀 Entrar no sistema", use_container_width=True):
+    if st.button("🔓 Acessar painel premium", use_container_width=True):
         ok, resultado = verificar_usuario(email)
 
         if not ok:
@@ -68,7 +110,9 @@ if not st.session_state.logado:
         st.session_state.email = email
         st.rerun()
 
+    st.markdown("<div class='login-foot'>🔒 Sistema estatístico • Não garante premiação</div>", unsafe_allow_html=True)
     st.stop()
+
 
 # ================= SESSION STATE APP =================
 defaults = {
@@ -238,3 +282,4 @@ if st.session_state.jogos:
         if st.session_state.comparacao_ativa:
             pontos = len(set(jogo) & set(st.session_state.resultado_real))
             st.success(f"🎯 {pontos} pontos")
+
