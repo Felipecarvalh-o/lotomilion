@@ -97,6 +97,7 @@ div[data-testid="stButton"] button {
     opacity: .9;
 }
 
+/* BADGE */
 .badge {
     background:#2A0934;
     padding:10px 16px;
@@ -105,14 +106,21 @@ div[data-testid="stButton"] button {
     margin-bottom:14px;
 }
 
+/* NUMEROS – AGORA CIRCULARES */
 .numero {
-    padding:14px;
-    border-radius:16px;
-    font-size:16px;
-    font-weight:700;
-    text-align:center;
-    color:white;
-    background:#6A1B9A;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    font-size: 16px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    background: radial-gradient(circle at top, #A855F7, #6A1B9A);
+    box-shadow:
+        inset 0 0 12px rgba(255,255,255,.15),
+        0 8px 20px rgba(168,85,247,.45);
 }
 </style>
 """, unsafe_allow_html=True)
@@ -200,6 +208,7 @@ if menu == "📊 Estratégias Avançadas":
                 st.session_state[k] = defaults[k]
             st.rerun()
 
+        # FECHAMENTO 21 → JOGOS DE 15
         if st.session_state.estrategia == "fechamento":
 
             fixas_txt = st.text_area("🔒 9 dezenas FIXAS")
@@ -214,8 +223,14 @@ if menu == "📊 Estratégias Avançadas":
                     st.error("Use exatamente 21 dezenas.")
                     st.stop()
 
-                st.session_state.jogos = gerar_fechamento_21_8(dezenas)
+                jogos = gerar_fechamento_21_8(dezenas)
 
+                # 🔥 GARANTIA DE 15 DEZENAS
+                st.session_state.jogos = [
+                    sorted(j[:15]) for j in jogos
+                ]
+
+        # HISTÓRICO REAL → JOGOS DE 15
         else:
             if st.button("🧠 Gerar Jogos"):
                 historico = carregar_historico(qtd=50)
@@ -233,18 +248,27 @@ if menu == "📊 Estratégias Avançadas":
                     dezenas_base, historico
                 )
 
-                st.session_state.jogos = jogos
+                st.session_state.jogos = [
+                    sorted(j[:15]) for j in jogos
+                ]
                 st.session_state.classificacao = classificacao
 
+    # ==================================================
+    # EXIBIÇÃO DOS JOGOS
+    # ==================================================
+
     if st.session_state.jogos:
-        st.subheader("🎲 Jogos Gerados")
+        st.subheader("🎲 Jogos Sugeridos (15 dezenas)")
 
         limite = 2 if st.session_state.modo == "demo" else len(st.session_state.jogos)
 
         for jogo in st.session_state.jogos[:limite]:
             cols = st.columns(5)
             for c, n in zip(cols * 3, jogo):
-                c.markdown(f"<div class='numero'>{n:02d}</div>", unsafe_allow_html=True)
+                c.markdown(
+                    f"<div class='numero'>{n:02d}</div>",
+                    unsafe_allow_html=True
+                )
 
         if st.session_state.modo == "demo" and len(st.session_state.jogos) > 2:
             st.warning("🔒 Jogos ilimitados disponíveis no plano PRO")
@@ -257,7 +281,9 @@ elif menu == "🎯 Gerador Simples":
     st.title("🎯 Gerador Simples")
     if st.button("Gerar jogo"):
         jogo = sorted(random.sample(range(1, 26), 15))
-        st.write(" ".join(f"{n:02d}" for n in jogo))
+        cols = st.columns(5)
+        for c, n in zip(cols * 3, jogo):
+            c.markdown(f"<div class='numero'>{n:02d}</div>", unsafe_allow_html=True)
 
 elif menu == "ℹ️ Sobre":
     st.title("ℹ️ Sobre")
