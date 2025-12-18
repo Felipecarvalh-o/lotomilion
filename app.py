@@ -1,15 +1,12 @@
 # ======================================================
-# Lotomilion Estrategista — App Premium
+# Lotomilion Estrategista — Login Premium REAL
 # ======================================================
 
-from data.lotofacil_historico import carregar_historico
-from engine import gerar_fechamento_21_8, gerar_historico_21_automatico
-from simulador import simular_cenario
-from utils import converter_lista
-from auth import verificar_usuario
-
 import streamlit as st
+import streamlit.components.v1 as components
 import random
+
+from auth import verificar_usuario
 
 # ======================================================
 # CONFIG
@@ -22,7 +19,7 @@ st.set_page_config(
 )
 
 # ======================================================
-# SESSION STATE AUTH
+# SESSION
 # ======================================================
 
 if "logado" not in st.session_state:
@@ -30,148 +27,120 @@ if "logado" not in st.session_state:
     st.session_state.email = None
 
 # ======================================================
-# ESTILO GLOBAL (STREAMLIT SAFE)
+# CSS GLOBAL
 # ======================================================
 
 st.markdown("""
 <style>
-:root {
-    --bg: #050007;
-    --primary: #A855F7;
-    --secondary: #7C3AED;
-    --text: #EDE9FE;
-    --muted: #C4B5FD;
-    --border: #2E1065;
-    --success: #00E676;
-}
-
-/* Streamlit root */
 [data-testid="stApp"] {
-    background: radial-gradient(circle at top, #1B0A2A, var(--bg));
-    color: var(--text);
+    background: radial-gradient(circle at top, #1B0A2A, #050007);
+    color: #EDE9FE;
 }
 
-/* ================= FUNDO DECORATIVO ================= */
-
-.login-bg {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    overflow: hidden;
-}
-
-.float {
-    position: absolute;
-    bottom: -120px;
-    opacity: 0.12;
-    animation: float 30s linear infinite;
-    filter: blur(0.6px);
-    user-select: none;
-}
-
-.trevo {
-    color: #A855F7;
-    text-shadow: 0 0 22px rgba(168,85,247,.7);
-}
-
-.n1 { color: #FACC15; }
-.n2 { color: #3B82F6; }
-.n3 { color: #22C55E; }
-.n4 { color: #EC4899; }
-
-@keyframes float {
-    from { transform: translateY(0) rotate(0deg); }
-    to { transform: translateY(-140vh) rotate(360deg); }
-}
-
-/* ================= CARD ================= */
-
-.card {
+input, button {
     position: relative;
-    z-index: 2;
-    background: linear-gradient(160deg, #14001F, #1F0030);
-    border-radius: 26px;
-    padding: 30px;
-    border: 1px solid var(--border);
-    box-shadow: 0 0 60px rgba(168,85,247,.35);
-    margin-bottom: 24px;
-}
-
-.card-title {
-    font-size: 24px;
-    font-weight: 900;
-}
-
-.card-sub {
-    font-size: 13px;
-    color: var(--muted);
-    margin-bottom: 18px;
+    z-index: 5;
 }
 </style>
 """, unsafe_allow_html=True)
 
 # ======================================================
-# LOGIN PREMIUM — FUNDO VISÍVEL
+# LOGIN
 # ======================================================
 
 if not st.session_state.logado:
 
+    # -------- FUNDO ANIMADO (HTML REAL) --------
     elementos = []
 
-    # Trevos roxos
     for _ in range(14):
-        left = random.randint(0, 100)
-        delay = random.randint(0, 25)
-        size = random.choice([42, 54, 66, 78])
         elementos.append(
             f"""
             <div class="float trevo"
-                 style="left:{left}%;
-                        font-size:{size}px;
-                        animation-delay:{delay}s;">
+                 style="
+                    left:{random.randint(0,100)}%;
+                    font-size:{random.choice([42,54,66,78])}px;
+                    animation-delay:{random.randint(0,25)}s;">
                 🍀
             </div>
             """
         )
 
-    # Números coloridos
-    numeros = ["07", "10", "13", "18", "21", "25"]
-    cores = ["n1", "n2", "n3", "n4"]
-
     for _ in range(10):
-        left = random.randint(0, 100)
-        delay = random.randint(0, 30)
-        size = random.choice([36, 44, 52])
-        num = random.choice(numeros)
-        cor = random.choice(cores)
         elementos.append(
             f"""
-            <div class="float {cor}"
-                 style="left:{left}%;
-                        font-size:{size}px;
-                        animation-delay:{delay}s;">
-                {num}
+            <div class="float numero {random.choice(['n1','n2','n3','n4'])}"
+                 style="
+                    left:{random.randint(0,100)}%;
+                    font-size:{random.choice([36,44,52])}px;
+                    animation-delay:{random.randint(0,30)}s;">
+                {random.choice(['07','10','13','18','21','25'])}
             </div>
             """
         )
 
-    st.markdown(
-        f"<div class='login-bg'>{''.join(elementos)}</div>",
-        unsafe_allow_html=True
+    components.html(
+        f"""
+        <style>
+        .login-bg {{
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }}
+
+        .float {{
+            position: absolute;
+            bottom: -120px;
+            opacity: 0.14;
+            animation: subir 30s linear infinite;
+            filter: blur(0.6px);
+        }}
+
+        .trevo {{
+            color: #A855F7;
+            text-shadow: 0 0 24px rgba(168,85,247,.8);
+        }}
+
+        .n1 {{ color:#FACC15; }}
+        .n2 {{ color:#3B82F6; }}
+        .n3 {{ color:#22C55E; }}
+        .n4 {{ color:#EC4899; }}
+
+        @keyframes subir {{
+            from {{ transform: translateY(0) rotate(0deg); }}
+            to {{ transform: translateY(-140vh) rotate(360deg); }}
+        }}
+
+        .card {{
+            margin: 12vh auto;
+            max-width: 420px;
+            padding: 32px;
+            border-radius: 26px;
+            background: linear-gradient(160deg, #14001F, #1F0030);
+            box-shadow: 0 0 70px rgba(168,85,247,.45);
+            border: 1px solid #2E1065;
+            text-align: center;
+            position: relative;
+            z-index: 3;
+        }}
+        </style>
+
+        <div class="login-bg">
+            {''.join(elementos)}
+        </div>
+
+        <div class="card">
+            <h2>🍀 Lotomilion Estrategista</h2>
+            <p>Inteligência estatística aplicada à Lotofácil<br>
+            <b>Acesso Premium</b></p>
+        </div>
+        """,
+        height=0
     )
 
-    # Card de login
-    st.markdown("""
-    <div class="card" style="max-width:420px;margin:12vh auto;text-align:center">
-        <div class="card-title">🍀 Lotomilion Estrategista</div>
-        <div class="card-sub">
-            Inteligência estatística aplicada à Lotofácil<br>
-            <b>Acesso Premium</b>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
+    # -------- FORM --------
     email = st.text_input(
         "Email",
         placeholder="seu@email.com",
@@ -192,8 +161,8 @@ if not st.session_state.logado:
     st.stop()
 
 # ======================================================
-# APP NORMAL (SEM FUNDO)
+# APP NORMAL
 # ======================================================
 
 st.title("🟣 Lotomilion Estrategista")
-st.caption(f"🔐 Acesso ativo • {st.session_state.email}")
+st.caption(f"🔐 Logado como {st.session_state.email}")
