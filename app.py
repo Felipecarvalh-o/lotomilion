@@ -51,6 +51,7 @@ header, footer { display: none; }
     background: linear-gradient(180deg, #0B0B12, #050007);
 }
 
+/* LOGIN */
 .login-card {
     max-width: 460px;
     margin: 12vh auto;
@@ -62,20 +63,22 @@ header, footer { display: none; }
     text-align: center;
 }
 
-.card {
-    background:#151515;
-    padding:22px;
-    border-radius:22px;
-    text-align:center;
-    border:2px solid transparent;
-    transition:.25s;
+/* MENU ROXO */
+section[data-testid="stSidebar"] div[role="radiogroup"] > label {
+    border-radius: 10px;
+    padding: 6px 10px;
+    margin-bottom: 4px;
+}
+section[data-testid="stSidebar"] div[role="radiogroup"] > label:hover {
+    background: rgba(168,85,247,0.15);
+}
+section[data-testid="stSidebar"] div[role="radiogroup"] > label:has(input:checked) {
+    background: linear-gradient(90deg,#7C3AED,#A855F7);
+    color: white;
+    font-weight: 700;
 }
 
-.card:hover {
-    border-color:#9C27B0;
-    transform:scale(1.03);
-}
-
+/* UI */
 .badge {
     background:#2A0934;
     padding:10px 16px;
@@ -92,19 +95,11 @@ header, footer { display: none; }
     text-align:center;
     color:white;
     background:#6A1B9A;
-    position:relative;
 }
 
 .acerto {
     border:2px solid #00E676;
     box-shadow:0 0 14px rgba(0,230,118,.8);
-}
-
-.trofeu {
-    position:absolute;
-    top:-6px;
-    right:-6px;
-    font-size:14px;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -148,7 +143,7 @@ menu = st.sidebar.radio(
 )
 
 # ======================================================
-# 📊 ESTRATÉGIAS AVANÇADAS (APP ANTIGO INTEGRADO)
+# 📊 ESTRATÉGIAS AVANÇADAS
 # ======================================================
 
 if menu == "📊 Estratégias Avançadas":
@@ -182,50 +177,74 @@ if menu == "📊 Estratégias Avançadas":
                 st.session_state[k] = defaults[k]
             st.rerun()
 
-        st.subheader("🧩 Base de 21 dezenas")
-        fixas_txt = st.text_area("🔒 9 dezenas FIXAS")
-        variaveis_txt = st.text_area("🔄 12 dezenas VARIÁVEIS")
+        # ================= FECHAMENTO 21 =================
+        if st.session_state.estrategia == "fechamento":
 
-        st.subheader("📥 Resultado Oficial (opcional)")
-        resultado_txt = st.text_input("Resultado do sorteio (15 dezenas)")
+            st.subheader("🧩 Base de 21 dezenas")
+            fixas_txt = st.text_area("🔒 9 dezenas FIXAS")
+            variaveis_txt = st.text_area("🔄 12 dezenas VARIÁVEIS")
 
-        if st.button("📊 Ativar Comparação"):
-            resultado = converter_lista(resultado_txt)
-            if len(resultado) == 15:
-                st.session_state.resultado_real = resultado
-                st.session_state.comparacao_ativa = True
+            st.subheader("📥 Resultado Oficial (opcional)")
+            resultado_txt = st.text_input("Resultado do sorteio (15 dezenas)")
 
-        if st.button("🧠 Gerar Jogos"):
-            fixas = converter_lista(fixas_txt)
-            variaveis = converter_lista(variaveis_txt)
-            dezenas = sorted(set(fixas + variaveis))
+            if st.button("📊 Ativar Comparação"):
+                resultado = converter_lista(resultado_txt)
+                if len(resultado) == 15:
+                    st.session_state.resultado_real = resultado
+                    st.session_state.comparacao_ativa = True
 
-            if len(dezenas) != 21:
-                st.error("Use exatamente 21 dezenas.")
-                st.stop()
+            if st.button("🧠 Gerar Jogos"):
+                fixas = converter_lista(fixas_txt)
+                variaveis = converter_lista(variaveis_txt)
+                dezenas = sorted(set(fixas + variaveis))
 
-            if st.session_state.estrategia == "fechamento":
+                if len(dezenas) != 21:
+                    st.error("Use exatamente 21 dezenas.")
+                    st.stop()
+
                 st.session_state.jogos = gerar_fechamento_21_8(dezenas)
-            else:
+                st.session_state.classificacao = None
+                st.session_state.comparacao_ativa = False
+
+        # ================= HISTÓRICO REAL =================
+        else:
+            st.info(
+                "📊 **Histórico Real**\n\n"
+                "Os jogos são gerados automaticamente com base nos números "
+                "mais relevantes dos últimos sorteios."
+            )
+
+            if st.button("🧠 Gerar Jogos"):
                 historico = carregar_historico(qtd=50)
-                jogos, classificacao = gerar_jogos_historico_real(dezenas, historico)
+                jogos, classificacao = gerar_jogos_historico_real([], historico)
+
                 st.session_state.jogos = jogos
                 st.session_state.classificacao = classificacao
+                st.session_state.comparacao_ativa = False
 
-            st.session_state.comparacao_ativa = False
-
+    # ================= RESULTADO =================
     if st.session_state.jogos:
         st.subheader("🎲 Jogos Gerados")
+
         for i, jogo in enumerate(st.session_state.jogos, 1):
             st.markdown(f"### Jogo {i}")
             cols = st.columns(5)
 
             for c, n in zip(cols * 3, jogo):
-                acerto = st.session_state.comparacao_ativa and n in (st.session_state.resultado_real or [])
+                acerto = (
+                    st.session_state.comparacao_ativa
+                    and n in (st.session_state.resultado_real or [])
+                )
                 c.markdown(
                     f"<div class='numero {'acerto' if acerto else ''}'>{n:02d}</div>",
                     unsafe_allow_html=True
                 )
+
+    if st.session_state.classificacao:
+        st.subheader("🧠 Ranking Estatístico")
+        st.write("🔥 Quentes:", " • ".join(f"{n:02d}" for n in st.session_state.classificacao["quentes"]))
+        st.write("🟠 Mornas:", " • ".join(f"{n:02d}" for n in st.session_state.classificacao["mornas"]))
+        st.write("🔵 Frias:", " • ".join(f"{n:02d}" for n in st.session_state.classificacao["frias"]))
 
 # ======================================================
 # OUTROS MENUS
