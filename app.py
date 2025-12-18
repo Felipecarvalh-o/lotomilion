@@ -1,5 +1,5 @@
 # ======================================================
-# Lotomilion Estrategista — Login Premium (CORRETO FINAL)
+# Lotomilion Estrategista — Login Premium (FINAL 100%)
 # ======================================================
 
 import streamlit as st
@@ -30,7 +30,7 @@ if "logado" not in st.session_state:
 
 elementos = []
 
-for _ in range(20):
+for _ in range(22):
     elementos.append(
         f"""<div class="float trevo"
              style="left:{random.randint(0,100)}%;
@@ -40,7 +40,7 @@ for _ in range(20):
         </div>"""
     )
 
-for _ in range(14):
+for _ in range(16):
     elementos.append(
         f"""<div class="float numero {random.choice(['n1','n2','n3','n4'])}"
              style="left:{random.randint(0,100)}%;
@@ -80,7 +80,7 @@ header, footer {{
 .float {{
     position: absolute;
     bottom: -120px;
-    opacity: 0.14;
+    opacity: 0.18;
     animation: subir linear infinite;
 }}
 
@@ -99,25 +99,25 @@ header, footer {{
 
 /* LOGIN WRAPPER */
 .login-wrapper {{
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
     z-index: 5;
-    padding: 16px;
+    padding: 12px;
 }}
 
 /* CARD */
 .login-card {{
     width: 100%;
     max-width: 420px;
-    padding: 32px 28px;
+    padding: 30px 26px 26px 26px;
     border-radius: 28px;
-    background: rgba(24,0,38,.65);
-    backdrop-filter: blur(14px);
-    border: 1px solid rgba(168,85,247,.4);
-    box-shadow: 0 0 120px rgba(168,85,247,.8);
+    background: rgba(24,0,38,.68);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(168,85,247,.45);
+    box-shadow: 0 0 140px rgba(168,85,247,.85);
     text-align: center;
 }}
 
@@ -131,24 +131,33 @@ header, footer {{
 .login-sub {{
     font-size: 14px;
     opacity: .85;
-    margin-bottom: 18px;
+    margin-bottom: 14px;
 }}
 
-/* INPUT */
-.login-card input {{
+/* AJUSTE INPUT STREAMLIT */
+div[data-testid="stTextInput"] {{
+    margin: 0 !important;
+}}
+
+div[data-testid="stTextInput"] input {{
     background: rgba(255,255,255,.08);
-    margin-top: 8px;
+    border-radius: 10px;
 }}
 
 /* BOTÃO */
-.login-card button {{
-    margin-top: 14px;
-    background: linear-gradient(90deg,#7C3AED,#A855F7);
-    border: none;
+div[data-testid="stButton"] {{
+    margin-top: 10px;
 }}
 
+div[data-testid="stButton"] button {{
+    background: linear-gradient(90deg,#7C3AED,#A855F7);
+    border: none;
+    border-radius: 12px;
+}}
+
+/* CAPTION */
 .login-caption {{
-    margin-top: 14px;
+    margin-top: 12px;
     font-size: 12px;
     opacity: .6;
 }}
@@ -193,9 +202,9 @@ if not st.session_state.logado:
         st.rerun()
 
     st.markdown("""
-        <div class="login-caption">
-            🔒 Sistema estatístico • Não garante premiação
-        </div>
+            <div class="login-caption">
+                🔒 Sistema estatístico • Não garante premiação
+            </div>
         </div>
     </div>
     """, unsafe_allow_html=True)
