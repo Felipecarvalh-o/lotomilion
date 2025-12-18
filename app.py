@@ -1,6 +1,10 @@
 import streamlit as st
 import random
+
 from auth import verificar_usuario
+from data.lotofacil_historico import carregar_historico
+from engine import gerar_fechamento_21_8, gerar_jogos_historico_real
+from utils import converter_lista
 
 # ======================================================
 # CONFIG
@@ -13,7 +17,7 @@ st.set_page_config(
 )
 
 # ======================================================
-# SESSION
+# SESSION STATE (LOGIN)
 # ======================================================
 
 if "logado" not in st.session_state:
@@ -21,7 +25,22 @@ if "logado" not in st.session_state:
     st.session_state.email = None
 
 # ======================================================
-# ESTILO
+# SESSION STATE (ESTRATÉGIAS)
+# ======================================================
+
+defaults = {
+    "estrategia": None,
+    "jogos": None,
+    "classificacao": None,
+    "resultado_real": None,
+    "comparacao_ativa": False,
+    "nome_estrategia": None
+}
+for k, v in defaults.items():
+    st.session_state.setdefault(k, v)
+
+# ======================================================
+# ESTILO GLOBAL
 # ======================================================
 
 st.markdown("""
@@ -35,7 +54,7 @@ header, footer { display: none; }
 .login-card {
     max-width: 460px;
     margin: 12vh auto;
-    padding: 36px 32px;
+    padding: 36px;
     border-radius: 26px;
     background: linear-gradient(180deg, #1A002B, #0E0018);
     border: 1px solid rgba(168,85,247,.45);
@@ -43,29 +62,49 @@ header, footer { display: none; }
     text-align: center;
 }
 
-.login-title {
-    font-size: 28px;
-    font-weight: 800;
+.card {
+    background:#151515;
+    padding:22px;
+    border-radius:22px;
+    text-align:center;
+    border:2px solid transparent;
+    transition:.25s;
 }
 
-.login-sub {
-    font-size: 14px;
-    opacity: .85;
-    margin-bottom: 26px;
+.card:hover {
+    border-color:#9C27B0;
+    transform:scale(1.03);
 }
 
-div[data-testid="stTextInput"] input {
-    height: 48px;
-    border-radius: 12px;
-    background: rgba(255,255,255,.08);
+.badge {
+    background:#2A0934;
+    padding:10px 16px;
+    border-radius:16px;
+    font-size:14px;
+    margin-bottom:14px;
 }
 
-div[data-testid="stButton"] button {
-    height: 50px;
-    border-radius: 14px;
-    font-weight: 700;
-    background: linear-gradient(90deg,#7C3AED,#A855F7);
-    border: none;
+.numero {
+    padding:14px;
+    border-radius:16px;
+    font-size:16px;
+    font-weight:700;
+    text-align:center;
+    color:white;
+    background:#6A1B9A;
+    position:relative;
+}
+
+.acerto {
+    border:2px solid #00E676;
+    box-shadow:0 0 14px rgba(0,230,118,.8);
+}
+
+.trofeu {
+    position:absolute;
+    top:-6px;
+    right:-6px;
+    font-size:14px;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -75,14 +114,10 @@ div[data-testid="stButton"] button {
 # ======================================================
 
 if not st.session_state.logado:
-
     st.markdown("""
     <div class="login-card">
-        <div class="login-title">🍀 Lotomilion Estrategista</div>
-        <div class="login-sub">
-            Inteligência estatística aplicada à Lotofácil<br>
-            <b>Acesso Premium</b>
-        </div>
+        <h2>🍀 Lotomilion Estrategista</h2>
+        <p>Inteligência estatística aplicada à Lotofácil<br><b>Acesso Premium</b></p>
     """, unsafe_allow_html=True)
 
     email = st.text_input("", placeholder="seu@email.com", label_visibility="collapsed")
@@ -97,13 +132,7 @@ if not st.session_state.logado:
         st.session_state.email = email
         st.rerun()
 
-    st.markdown("""
-        <div style="margin-top:16px;font-size:12px;opacity:.6">
-            🔒 Sistema estatístico • Não garante premiação
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
+    st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
 # ======================================================
@@ -115,51 +144,99 @@ st.sidebar.caption(st.session_state.email)
 
 menu = st.sidebar.radio(
     "Menu",
-    ["📊 Estratégia Lotofácil", "🎯 Gerador de Jogos", "ℹ️ Sobre"]
+    ["📊 Estratégias Avançadas", "🎯 Gerador Simples", "ℹ️ Sobre"]
 )
 
 # ======================================================
-# CONTEÚDO
+# 📊 ESTRATÉGIAS AVANÇADAS (APP ANTIGO INTEGRADO)
 # ======================================================
 
-if menu == "📊 Estratégia Lotofácil":
-    st.title("📊 Estratégia Lotofácil")
+if menu == "📊 Estratégias Avançadas":
 
-    st.markdown("""
-    ### 🔥 Estratégia Base (Exemplo)
+    st.title("📊 Estratégias Avançadas — Lotofácil")
 
-    - Trabalhar com **15 números**
-    - Misturar:
-        - 8 pares
-        - 7 ímpares
-    - Garantir:
-        - 7 números entre 1–10
-        - 8 números entre 11–25
-    """)
+    if not st.session_state.estrategia:
+        st.subheader("🎯 Escolha a Estratégia")
+        c1, c2 = st.columns(2)
 
-    if st.button("Gerar Jogo Estratégico"):
+        with c1:
+            if st.button("🎯 Fechamento 21", use_container_width=True):
+                st.session_state.estrategia = "fechamento"
+                st.session_state.nome_estrategia = "Fechamento 21"
+                st.rerun()
+
+        with c2:
+            if st.button("📊 Histórico Real", use_container_width=True):
+                st.session_state.estrategia = "historico"
+                st.session_state.nome_estrategia = "Histórico Real"
+                st.rerun()
+
+    if st.session_state.estrategia:
+        st.markdown(
+            f"<div class='badge'>📌 Estratégia ativa: <b>{st.session_state.nome_estrategia}</b></div>",
+            unsafe_allow_html=True
+        )
+
+        if st.button("🔄 Trocar estratégia"):
+            for k in defaults:
+                st.session_state[k] = defaults[k]
+            st.rerun()
+
+        st.subheader("🧩 Base de 21 dezenas")
+        fixas_txt = st.text_area("🔒 9 dezenas FIXAS")
+        variaveis_txt = st.text_area("🔄 12 dezenas VARIÁVEIS")
+
+        st.subheader("📥 Resultado Oficial (opcional)")
+        resultado_txt = st.text_input("Resultado do sorteio (15 dezenas)")
+
+        if st.button("📊 Ativar Comparação"):
+            resultado = converter_lista(resultado_txt)
+            if len(resultado) == 15:
+                st.session_state.resultado_real = resultado
+                st.session_state.comparacao_ativa = True
+
+        if st.button("🧠 Gerar Jogos"):
+            fixas = converter_lista(fixas_txt)
+            variaveis = converter_lista(variaveis_txt)
+            dezenas = sorted(set(fixas + variaveis))
+
+            if len(dezenas) != 21:
+                st.error("Use exatamente 21 dezenas.")
+                st.stop()
+
+            if st.session_state.estrategia == "fechamento":
+                st.session_state.jogos = gerar_fechamento_21_8(dezenas)
+            else:
+                historico = carregar_historico(qtd=50)
+                jogos, classificacao = gerar_jogos_historico_real(dezenas, historico)
+                st.session_state.jogos = jogos
+                st.session_state.classificacao = classificacao
+
+            st.session_state.comparacao_ativa = False
+
+    if st.session_state.jogos:
+        st.subheader("🎲 Jogos Gerados")
+        for i, jogo in enumerate(st.session_state.jogos, 1):
+            st.markdown(f"### Jogo {i}")
+            cols = st.columns(5)
+
+            for c, n in zip(cols * 3, jogo):
+                acerto = st.session_state.comparacao_ativa and n in (st.session_state.resultado_real or [])
+                c.markdown(
+                    f"<div class='numero {'acerto' if acerto else ''}'>{n:02d}</div>",
+                    unsafe_allow_html=True
+                )
+
+# ======================================================
+# OUTROS MENUS
+# ======================================================
+
+elif menu == "🎯 Gerador Simples":
+    st.title("🎯 Gerador Simples")
+    if st.button("Gerar jogo"):
         jogo = sorted(random.sample(range(1, 26), 15))
-        st.success("🎯 Jogo gerado:")
         st.write(" ".join(f"{n:02d}" for n in jogo))
 
-elif menu == "🎯 Gerador de Jogos":
-    st.title("🎯 Gerador de Jogos")
-
-    qtd = st.slider("Quantidade de jogos", 1, 10, 3)
-
-    if st.button("Gerar"):
-        for i in range(qtd):
-            jogo = sorted(random.sample(range(1, 26), 15))
-            st.write(f"Jogo {i+1}: ", " ".join(f"{n:02d}" for n in jogo))
-
 elif menu == "ℹ️ Sobre":
-    st.title("ℹ️ Sobre o Lotomilion")
-
-    st.markdown("""
-    **Lotomilion Estrategista** é um sistema de apoio estatístico  
-    voltado para a Lotofácil.
-
-    ⚠️ Não garante premiação.  
-    📊 Baseado em padrões históricos e combinações.
-    """)
-
+    st.title("ℹ️ Sobre")
+    st.write("Sistema estatístico educacional. Não garante premiação.")
