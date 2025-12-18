@@ -1,5 +1,5 @@
 # ======================================================
-# Lotomilion Estrategista — Login Premium (FINAL CORRIGIDO)
+# Lotomilion Estrategista — Login Premium (FINAL ESTÁVEL)
 # ======================================================
 
 import streamlit as st
@@ -30,7 +30,7 @@ if "logado" not in st.session_state:
 
 elementos = []
 
-for _ in range(22):
+for _ in range(20):
     elementos.append(
         f"""
         <div class="float trevo"
@@ -42,7 +42,7 @@ for _ in range(22):
         """
     )
 
-for _ in range(16):
+for _ in range(14):
     elementos.append(
         f"""
         <div class="float numero {random.choice(['n1','n2','n3','n4'])}"
@@ -57,7 +57,7 @@ for _ in range(16):
 st.markdown(f"""
 <style>
 
-/* RESET STREAMLIT */
+/* RESET */
 html, body, [data-testid="stApp"] {{
     height: 100%;
 }}
@@ -101,13 +101,13 @@ header, footer {{
 .n3 {{ color:#22C55E; }}
 .n4 {{ color:#EC4899; }}
 
-/* LOGIN WRAPPER — FIX DEFINITIVO */
+/* WRAPPER (SEM ERRO DE CHAVE) */
 .login-wrapper {{
     height: 100vh;
     display: flex;
-    align-items: flex-start;   /* evita scroll */
+    align-items: flex-start;
     justify-content: center;
-    padding-top: 12vh;         /* distância 0.5 */
+    padding-top: 12vh;
     padding-left: 12px;
     padding-right: 12px;
     position: relative;
@@ -127,7 +127,7 @@ header, footer {{
     text-align: center;
 }}
 
-/* TÍTULO */
+/* TEXTO */
 .login-title {{
     font-size: 26px;
     font-weight: 700;
@@ -150,7 +150,7 @@ div[data-testid="stTextInput"] input {{
     border-radius: 10px;
 }}
 
-/* BOTÃO */
+/* BOTÃO ROXO */
 div[data-testid="stButton"] {{
     margin-top: 10px;
 }}
@@ -218,7 +218,7 @@ if not st.session_state.logado:
     st.stop()
 
 # ======================================================
-# APP PRINCIPAL
+# APP
 # ======================================================
 
 st.title("🟣 Lotomilion Estrategista")
