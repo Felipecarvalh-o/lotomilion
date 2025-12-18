@@ -1,5 +1,5 @@
 # ======================================================
-# Lotomilion Estrategista — Login Premium (BELEZA FINAL)
+# Lotomilion Estrategista — Login Premium (CORRETO FINAL)
 # ======================================================
 
 import streamlit as st
@@ -30,22 +30,22 @@ if "logado" not in st.session_state:
 
 elementos = []
 
-for _ in range(22):
+for _ in range(20):
     elementos.append(
         f"""<div class="float trevo"
              style="left:{random.randint(0,100)}%;
-                    font-size:{random.choice([36,48,60])}px;
-                    animation-duration:{random.randint(30,48)}s;">
+                    font-size:{random.choice([32,44,56])}px;
+                    animation-duration:{random.randint(28,46)}s;">
             🍀
         </div>"""
     )
 
-for _ in range(16):
+for _ in range(14):
     elementos.append(
         f"""<div class="float numero {random.choice(['n1','n2','n3','n4'])}"
              style="left:{random.randint(0,100)}%;
-                    font-size:{random.choice([28,36,42])}px;
-                    animation-duration:{random.randint(32,50)}s;">
+                    font-size:{random.choice([26,34,42])}px;
+                    animation-duration:{random.randint(30,48)}s;">
             {random.choice(['01','03','05','07','10','13','15','18','21','25'])}
         </div>"""
     )
@@ -53,7 +53,7 @@ for _ in range(16):
 st.markdown(f"""
 <style>
 
-/* RESET */
+/* RESET STREAMLIT */
 html, body, [data-testid="stApp"] {{
     height: 100%;
 }}
@@ -71,98 +71,86 @@ header, footer {{
     position: fixed;
     inset: 0;
     z-index: 0;
-    pointer-events: none;
     background:
         radial-gradient(circle at top, rgba(168,85,247,.25), transparent 55%),
         linear-gradient(180deg, #12001B, #050007);
+    overflow: hidden;
 }}
 
 .float {{
     position: absolute;
-    bottom: -140px;
-    opacity: 0.12;
-    filter: blur(0.4px);
+    bottom: -120px;
+    opacity: 0.14;
     animation: subir linear infinite;
 }}
 
 @keyframes subir {{
     from {{ transform: translateY(0); }}
-    to {{ transform: translateY(-180vh); }}
+    to {{ transform: translateY(-160vh); }}
 }}
 
-.trevo {{
-    color: #A855F7;
-}}
-
-.numero {{
-    font-weight: 700;
-}}
+.trevo {{ color:#A855F7; }}
+.numero {{ font-weight:700; }}
 
 .n1 {{ color:#FACC15; }}
 .n2 {{ color:#3B82F6; }}
 .n3 {{ color:#22C55E; }}
 .n4 {{ color:#EC4899; }}
 
-/* VINHETA */
-.vignette {{
-    position: fixed;
-    inset: 0;
-    z-index: 1;
-    pointer-events: none;
-    background: radial-gradient(circle, transparent 45%, rgba(0,0,0,.65));
-}}
-
-/* LOGIN */
+/* LOGIN WRAPPER */
 .login-wrapper {{
-    min-height: 100vh;
+    height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
     z-index: 5;
+    padding: 16px;
 }}
 
+/* CARD */
 .login-card {{
     width: 100%;
     max-width: 420px;
-    padding: 38px;
+    padding: 32px 28px;
     border-radius: 28px;
-    background: rgba(20,0,31,.55);
+    background: rgba(24,0,38,.65);
     backdrop-filter: blur(14px);
-    box-shadow:
-        0 0 140px rgba(168,85,247,.85),
-        inset 0 0 40px rgba(255,255,255,.05);
-    border: 1px solid rgba(168,85,247,.35);
+    border: 1px solid rgba(168,85,247,.4);
+    box-shadow: 0 0 120px rgba(168,85,247,.8);
     text-align: center;
 }}
 
-.login-card h2 {{
-    margin-bottom: 8px;
+/* TÍTULO */
+.login-title {{
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 6px;
 }}
 
-.login-card p {{
-    opacity: .9;
+.login-sub {{
+    font-size: 14px;
+    opacity: .85;
+    margin-bottom: 18px;
 }}
 
+/* INPUT */
 .login-card input {{
-    margin-top: 18px;
-    background: rgba(255,255,255,.06);
+    background: rgba(255,255,255,.08);
+    margin-top: 8px;
 }}
 
+/* BOTÃO */
 .login-card button {{
-    margin-top: 18px;
+    margin-top: 14px;
     background: linear-gradient(90deg,#7C3AED,#A855F7);
     border: none;
 }}
 
-.login-card button:hover {{
-    filter: brightness(1.1);
-}}
-
 .login-caption {{
-    margin-top: 16px;
-    font-size: 13px;
-    opacity: .65;
+    margin-top: 14px;
+    font-size: 12px;
+    opacity: .6;
 }}
 
 </style>
@@ -170,7 +158,6 @@ header, footer {{
 <div class="login-bg">
     {''.join(elementos)}
 </div>
-<div class="vignette"></div>
 """, unsafe_allow_html=True)
 
 # ======================================================
@@ -179,14 +166,14 @@ header, footer {{
 
 if not st.session_state.logado:
 
-    st.markdown('<div class="login-wrapper"><div class="login-card">', unsafe_allow_html=True)
-
     st.markdown("""
-        <h2>🍀 Lotomilion Estrategista</h2>
-        <p>
-            Inteligência estatística aplicada à Lotofácil<br>
-            <b>Acesso Premium</b>
-        </p>
+    <div class="login-wrapper">
+        <div class="login-card">
+            <div class="login-title">🍀 Lotomilion Estrategista</div>
+            <div class="login-sub">
+                Inteligência estatística aplicada à Lotofácil<br>
+                <b>Acesso Premium</b>
+            </div>
     """, unsafe_allow_html=True)
 
     email = st.text_input(
@@ -205,13 +192,18 @@ if not st.session_state.logado:
         st.session_state.email = email
         st.rerun()
 
-    st.markdown('<div class="login-caption">🔒 Sistema estatístico • Não garante premiação</div>', unsafe_allow_html=True)
+    st.markdown("""
+        <div class="login-caption">
+            🔒 Sistema estatístico • Não garante premiação
+        </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    st.markdown('</div></div>', unsafe_allow_html=True)
     st.stop()
 
 # ======================================================
-# APP
+# APP PRINCIPAL
 # ======================================================
 
 st.title("🟣 Lotomilion Estrategista")
