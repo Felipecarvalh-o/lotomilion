@@ -17,30 +17,31 @@ st.set_page_config(
 )
 
 # ======================================================
-# SESSION STATE (LOGIN)
+# SESSION STATE
 # ======================================================
 
 if "logado" not in st.session_state:
     st.session_state.logado = False
     st.session_state.email = None
-
-# ======================================================
-# SESSION STATE (ESTRATÉGIAS)
-# ======================================================
+    st.session_state.plano = "demo"  # demo | pro
 
 defaults = {
     "estrategia": None,
-    "jogos": None,
+    "jogos": [],
     "classificacao": None,
-    "resultado_real": None,
-    "comparacao_ativa": False,
     "nome_estrategia": None
 }
 for k, v in defaults.items():
     st.session_state.setdefault(k, v)
 
 # ======================================================
-# ESTILO GLOBAL
+# LIMITES
+# ======================================================
+
+LIMITE_JOGOS_DEMO = 2
+
+# ======================================================
+# ESTILO
 # ======================================================
 
 st.markdown("""
@@ -63,9 +64,9 @@ header, footer { display: none; }
     text-align: center;
 }
 
-/* BOTÃO ROXO (LOGIN + APP) */
+/* BOTÕES ROXOS */
 div[data-testid="stButton"] button {
-    height: 50px;
+    height: 48px;
     border-radius: 14px;
     font-weight: 700;
     background: linear-gradient(90deg,#7C3AED,#A855F7);
@@ -74,18 +75,11 @@ div[data-testid="stButton"] button {
 }
 
 /* MENU ROXO */
-section[data-testid="stSidebar"] div[role="radiogroup"] > label {
-    border-radius: 10px;
-    padding: 6px 10px;
-    margin-bottom: 4px;
-}
-section[data-testid="stSidebar"] div[role="radiogroup"] > label:hover {
-    background: rgba(168,85,247,0.15);
-}
 section[data-testid="stSidebar"] div[role="radiogroup"] > label:has(input:checked) {
     background: linear-gradient(90deg,#7C3AED,#A855F7);
     color: white;
     font-weight: 700;
+    border-radius: 10px;
 }
 
 /* UI */
@@ -106,11 +100,6 @@ section[data-testid="stSidebar"] div[role="radiogroup"] > label:has(input:checke
     color:white;
     background:#6A1B9A;
 }
-
-.acerto {
-    border:2px solid #00E676;
-    box-shadow:0 0 14px rgba(0,230,118,.8);
-}
 </style>
 """, unsafe_allow_html=True)
 
@@ -122,12 +111,12 @@ if not st.session_state.logado:
     st.markdown("""
     <div class="login-card">
         <h2>🍀 Lotomilion Estrategista</h2>
-        <p>Inteligência estatística aplicada à Lotofácil<br><b>Acesso Premium</b></p>
+        <p>Inteligência estatística aplicada à Lotofácil<br><b>Modo Demonstração</b></p>
     """, unsafe_allow_html=True)
 
     email = st.text_input("", placeholder="seu@email.com", label_visibility="collapsed")
 
-    if st.button("Entrar no Painel Premium", use_container_width=True):
+    if st.button("Entrar no Painel", use_container_width=True):
         ok, msg = verificar_usuario(email)
         if not ok:
             st.error(msg)
@@ -135,17 +124,21 @@ if not st.session_state.logado:
 
         st.session_state.logado = True
         st.session_state.email = email
+        st.session_state.plano = "demo"
         st.rerun()
 
     st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
 # ======================================================
-# MENU LATERAL
+# SIDEBAR
 # ======================================================
 
 st.sidebar.title("🍀 Lotomilion")
 st.sidebar.caption(st.session_state.email)
+
+if st.session_state.plano == "demo":
+    st.sidebar.warning("🔓 Modo Demonstração")
 
 menu = st.sidebar.radio(
     "Menu",
@@ -153,7 +146,7 @@ menu = st.sidebar.radio(
 )
 
 # ======================================================
-# 📊 ESTRATÉGIAS AVANÇADAS
+# 📊 ESTRATÉGIAS
 # ======================================================
 
 if menu == "📊 Estratégias Avançadas":
@@ -161,7 +154,6 @@ if menu == "📊 Estratégias Avançadas":
     st.title("📊 Estratégias Avançadas — Lotofácil")
 
     if not st.session_state.estrategia:
-        st.subheader("🎯 Escolha a Estratégia")
         c1, c2 = st.columns(2)
 
         with c1:
@@ -187,17 +179,16 @@ if menu == "📊 Estratégias Avançadas":
                 st.session_state[k] = defaults[k]
             st.rerun()
 
-        # ================= FECHAMENTO 21 =================
+        # ---------------- FECHAMENTO 21 ----------------
         if st.session_state.estrategia == "fechamento":
 
-            st.subheader("🧩 Base de 21 dezenas")
             fixas_txt = st.text_area("🔒 9 dezenas FIXAS")
             variaveis_txt = st.text_area("🔄 12 dezenas VARIÁVEIS")
 
             if st.button("🧠 Gerar Jogos"):
-                fixas = converter_lista(fixas_txt)
-                variaveis = converter_lista(variaveis_txt)
-                dezenas = sorted(set(fixas + variaveis))
+                dezenas = sorted(
+                    set(converter_lista(fixas_txt) + converter_lista(variaveis_txt))
+                )
 
                 if len(dezenas) != 21:
                     st.error("Use exatamente 21 dezenas.")
@@ -205,46 +196,35 @@ if menu == "📊 Estratégias Avançadas":
 
                 st.session_state.jogos = gerar_fechamento_21_8(dezenas)
 
-        # ================= HISTÓRICO REAL (CORRIGIDO) =================
+        # ---------------- HISTÓRICO REAL ----------------
         else:
-            st.info(
-                "📊 Geração automática baseada nos números mais fortes "
-                "dos últimos sorteios."
-            )
+            st.info("📊 Geração automática baseada nos últimos sorteios reais.")
 
             if st.button("🧠 Gerar Jogos"):
                 historico = carregar_historico(qtd=50)
 
-                # gera base de 21 dezenas a partir do ranking real
-                _, ranking = gerar_jogos_historico_real(
-                    list(range(1, 22)), historico
-                )
-
-                dezenas_base = (
-                    ranking["quentes"]
-                    + ranking["mornas"]
-                    + ranking["frias"]
-                )[:21]
-
-                jogos, classificacao = gerar_jogos_historico_real(
-                    dezenas_base, historico
-                )
+                base = list(range(1, 26))
+                jogos, classificacao = gerar_jogos_historico_real(base, historico)
 
                 st.session_state.jogos = jogos
                 st.session_state.classificacao = classificacao
 
+    # ================= RESULTADO =================
     if st.session_state.jogos:
+        limite = LIMITE_JOGOS_DEMO if st.session_state.plano == "demo" else len(st.session_state.jogos)
+
         st.subheader("🎲 Jogos Gerados")
-        for i, jogo in enumerate(st.session_state.jogos, 1):
+
+        for jogo in st.session_state.jogos[:limite]:
             cols = st.columns(5)
             for c, n in zip(cols * 3, jogo):
-                c.markdown(
-                    f"<div class='numero'>{n:02d}</div>",
-                    unsafe_allow_html=True
-                )
+                c.markdown(f"<div class='numero'>{n:02d}</div>", unsafe_allow_html=True)
+
+        if st.session_state.plano == "demo" and len(st.session_state.jogos) > LIMITE_JOGOS_DEMO:
+            st.warning("🔒 Gere jogos ilimitados no plano PRO")
 
 # ======================================================
-# OUTROS MENUS
+# OUTROS
 # ======================================================
 
 elif menu == "🎯 Gerador Simples":
