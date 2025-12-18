@@ -112,26 +112,13 @@ if not st.session_state.logado:
             from {{ transform: translateY(0) rotate(0deg); }}
             to {{ transform: translateY(-150vh) rotate(360deg); }}
         }}
-
-        .card {{
-            margin: 12vh auto;
-            max-width: 420px;
-            padding: 32px;
-            border-radius: 26px;
-            background: linear-gradient(160deg, #14001F, #1F0030);
-            box-shadow: 0 0 80px rgba(168,85,247,.5);
-            border: 1px solid #2E1065;
-            text-align: center;
-            position: relative;
-            z-index: 3;
-        }}
         </style>
 
         <div class="login-bg">
             {''.join(elementos)}
         </div>
         """,
-        height=600   <!-- 🔥 ISSO É O QUE SALVA TUDO -->
+        height=600  # altura necessária para o Streamlit renderizar o HTML
     )
 
     # -------- CARD --------
