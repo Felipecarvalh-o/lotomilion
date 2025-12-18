@@ -63,6 +63,16 @@ header, footer { display: none; }
     text-align: center;
 }
 
+/* BOTÃO ROXO (LOGIN + APP) */
+div[data-testid="stButton"] button {
+    height: 50px;
+    border-radius: 14px;
+    font-weight: 700;
+    background: linear-gradient(90deg,#7C3AED,#A855F7);
+    border: none;
+    color: white;
+}
+
 /* MENU ROXO */
 section[data-testid="stSidebar"] div[role="radiogroup"] > label {
     border-radius: 10px;
@@ -184,15 +194,6 @@ if menu == "📊 Estratégias Avançadas":
             fixas_txt = st.text_area("🔒 9 dezenas FIXAS")
             variaveis_txt = st.text_area("🔄 12 dezenas VARIÁVEIS")
 
-            st.subheader("📥 Resultado Oficial (opcional)")
-            resultado_txt = st.text_input("Resultado do sorteio (15 dezenas)")
-
-            if st.button("📊 Ativar Comparação"):
-                resultado = converter_lista(resultado_txt)
-                if len(resultado) == 15:
-                    st.session_state.resultado_real = resultado
-                    st.session_state.comparacao_ativa = True
-
             if st.button("🧠 Gerar Jogos"):
                 fixas = converter_lista(fixas_txt)
                 variaveis = converter_lista(variaveis_txt)
@@ -203,48 +204,44 @@ if menu == "📊 Estratégias Avançadas":
                     st.stop()
 
                 st.session_state.jogos = gerar_fechamento_21_8(dezenas)
-                st.session_state.classificacao = None
-                st.session_state.comparacao_ativa = False
 
-        # ================= HISTÓRICO REAL =================
+        # ================= HISTÓRICO REAL (CORRIGIDO) =================
         else:
             st.info(
-                "📊 **Histórico Real**\n\n"
-                "Os jogos são gerados automaticamente com base nos números "
-                "mais relevantes dos últimos sorteios."
+                "📊 Geração automática baseada nos números mais fortes "
+                "dos últimos sorteios."
             )
 
             if st.button("🧠 Gerar Jogos"):
                 historico = carregar_historico(qtd=50)
-                jogos, classificacao = gerar_jogos_historico_real([], historico)
+
+                # gera base de 21 dezenas a partir do ranking real
+                _, ranking = gerar_jogos_historico_real(
+                    list(range(1, 22)), historico
+                )
+
+                dezenas_base = (
+                    ranking["quentes"]
+                    + ranking["mornas"]
+                    + ranking["frias"]
+                )[:21]
+
+                jogos, classificacao = gerar_jogos_historico_real(
+                    dezenas_base, historico
+                )
 
                 st.session_state.jogos = jogos
                 st.session_state.classificacao = classificacao
-                st.session_state.comparacao_ativa = False
 
-    # ================= RESULTADO =================
     if st.session_state.jogos:
         st.subheader("🎲 Jogos Gerados")
-
         for i, jogo in enumerate(st.session_state.jogos, 1):
-            st.markdown(f"### Jogo {i}")
             cols = st.columns(5)
-
             for c, n in zip(cols * 3, jogo):
-                acerto = (
-                    st.session_state.comparacao_ativa
-                    and n in (st.session_state.resultado_real or [])
-                )
                 c.markdown(
-                    f"<div class='numero {'acerto' if acerto else ''}'>{n:02d}</div>",
+                    f"<div class='numero'>{n:02d}</div>",
                     unsafe_allow_html=True
                 )
-
-    if st.session_state.classificacao:
-        st.subheader("🧠 Ranking Estatístico")
-        st.write("🔥 Quentes:", " • ".join(f"{n:02d}" for n in st.session_state.classificacao["quentes"]))
-        st.write("🟠 Mornas:", " • ".join(f"{n:02d}" for n in st.session_state.classificacao["mornas"]))
-        st.write("🔵 Frias:", " • ".join(f"{n:02d}" for n in st.session_state.classificacao["frias"]))
 
 # ======================================================
 # OUTROS MENUS
