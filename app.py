@@ -1,5 +1,5 @@
 # ======================================================
-# Lotomilion Estrategista — Login Premium (ESTÁTICO FIXO)
+# Lotomilion Estrategista — Login Premium (ESTÁVEL REAL)
 # ======================================================
 
 import streamlit as st
@@ -14,7 +14,8 @@ from auth import verificar_usuario
 st.set_page_config(
     page_title="Lotomilion Estrategista",
     page_icon="🍀",
-    layout="centered"
+    layout="centered",
+    initial_sidebar_state="collapsed"
 )
 
 # ======================================================
@@ -26,26 +27,26 @@ if "logado" not in st.session_state:
     st.session_state.email = None
 
 # ======================================================
-# FUNDO ESTÁTICO (IFRAME – NÃO VAZA)
+# FUNDO ESTÁTICO (ISOLADO)
 # ======================================================
 
-bg_items = ""
+items = ""
 
 for _ in range(18):
-    bg_items += f"""
+    items += f"""
     <div class="item trevo"
-         style="top:{random.randint(2,95)}%;
-                left:{random.randint(2,95)}%;
+         style="top:{random.randint(5,90)}%;
+                left:{random.randint(5,90)}%;
                 font-size:{random.choice([22,28,34,40])}px;">
         🍀
     </div>
     """
 
-for _ in range(16):
-    bg_items += f"""
+for _ in range(14):
+    items += f"""
     <div class="item numero"
-         style="top:{random.randint(2,95)}%;
-                left:{random.randint(2,95)}%;
+         style="top:{random.randint(5,90)}%;
+                left:{random.randint(5,90)}%;
                 font-size:{random.choice([18,22,26,30])}px;">
         {random.choice(['01','03','05','07','10','13','15','18','21','25'])}
     </div>
@@ -59,7 +60,6 @@ f"""
 html, body {{
     margin: 0;
     padding: 0;
-    width: 100%;
     height: 100%;
     overflow: hidden;
 }}
@@ -93,7 +93,7 @@ html, body {{
 
 <body>
 <div class="bg">
-    {bg_items}
+    {items}
 </div>
 </body>
 </html>
@@ -102,23 +102,26 @@ height=0
 )
 
 # ======================================================
-# CSS DO STREAMLIT
+# CSS STREAMLIT (ANTI-ESPAÇO FANTASMA)
 # ======================================================
 
 st.markdown("""
 <style>
-header, footer { display: none; }
 
-.login-wrapper {
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+/* REMOVE ESPAÇOS MALDITOS */
+header, footer, [data-testid="stToolbar"] {
+    display: none !important;
 }
 
+.block-container {
+    padding-top: 0rem !important;
+    padding-bottom: 0rem !important;
+}
+
+/* CARD */
 .login-card {
-    width: 100%;
     max-width: 420px;
+    margin: 12vh auto 0 auto;
     padding: 28px;
     border-radius: 26px;
     background: rgba(24,0,38,.78);
@@ -128,11 +131,13 @@ header, footer { display: none; }
     text-align: center;
 }
 
+/* INPUT */
 div[data-testid="stTextInput"] input {
     background: rgba(255,255,255,.08);
     border-radius: 10px;
 }
 
+/* BOTÃO */
 div[data-testid="stButton"] button {
     background: linear-gradient(90deg,#7C3AED,#A855F7);
     border: none;
@@ -148,12 +153,16 @@ div[data-testid="stButton"] button {
 
 if not st.session_state.logado:
 
-    st.markdown('<div class="login-wrapper"><div class="login-card">', unsafe_allow_html=True)
+    st.markdown('<div class="login-card">', unsafe_allow_html=True)
 
     st.markdown("## 🍀 Lotomilion Estrategista")
     st.caption("Inteligência estatística aplicada à Lotofácil — **Acesso Premium**")
 
-    email = st.text_input("", placeholder="seu@email.com", label_visibility="collapsed")
+    email = st.text_input(
+        "",
+        placeholder="seu@email.com",
+        label_visibility="collapsed"
+    )
 
     if st.button("Entrar no Painel Premium", use_container_width=True):
         ok, msg = verificar_usuario(email)
@@ -167,7 +176,7 @@ if not st.session_state.logado:
 
     st.caption("🔒 Sistema estatístico • Não garante premiação")
 
-    st.markdown("</div></div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
 # ======================================================
