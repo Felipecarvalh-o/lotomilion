@@ -1,5 +1,5 @@
 # ======================================================
-# Lotomilion Estrategista — Login Premium (ESTÁVEL REAL)
+# Lotomilion Estrategista — Login Premium (DEFINITIVO)
 # ======================================================
 
 import streamlit as st
@@ -27,13 +27,13 @@ if "logado" not in st.session_state:
     st.session_state.email = None
 
 # ======================================================
-# FUNDO ESTÁTICO (ISOLADO)
+# FUNDO ESTÁTICO
 # ======================================================
 
-items = ""
+bg_items = ""
 
-for _ in range(18):
-    items += f"""
+for _ in range(20):
+    bg_items += f"""
     <div class="item trevo"
          style="top:{random.randint(5,90)}%;
                 left:{random.randint(5,90)}%;
@@ -42,8 +42,8 @@ for _ in range(18):
     </div>
     """
 
-for _ in range(14):
-    items += f"""
+for _ in range(16):
+    bg_items += f"""
     <div class="item numero"
          style="top:{random.randint(5,90)}%;
                 left:{random.randint(5,90)}%;
@@ -93,7 +93,7 @@ html, body {{
 
 <body>
 <div class="bg">
-    {items}
+    {bg_items}
 </div>
 </body>
 </html>
@@ -102,61 +102,66 @@ height=0
 )
 
 # ======================================================
-# CSS STREAMLIT (ANTI-ESPAÇO FANTASMA)
+# CSS STREAMLIT (LIMPEZA TOTAL)
 # ======================================================
 
 st.markdown("""
 <style>
-
-/* REMOVE ESPAÇOS MALDITOS */
 header, footer, [data-testid="stToolbar"] {
     display: none !important;
 }
 
 .block-container {
-    padding-top: 0rem !important;
-    padding-bottom: 0rem !important;
-}
-
-/* CARD */
-.login-card {
-    max-width: 420px;
-    margin: 12vh auto 0 auto;
-    padding: 28px;
-    border-radius: 26px;
-    background: rgba(24,0,38,.78);
-    backdrop-filter: blur(16px);
-    border: 1px solid rgba(168,85,247,.45);
-    box-shadow: 0 0 120px rgba(168,85,247,.9);
-    text-align: center;
-}
-
-/* INPUT */
-div[data-testid="stTextInput"] input {
-    background: rgba(255,255,255,.08);
-    border-radius: 10px;
-}
-
-/* BOTÃO */
-div[data-testid="stButton"] button {
-    background: linear-gradient(90deg,#7C3AED,#A855F7);
-    border: none;
-    border-radius: 12px;
-    font-weight: bold;
+    padding: 0 !important;
 }
 </style>
 """, unsafe_allow_html=True)
 
 # ======================================================
-# LOGIN
+# LOGIN (CARD FIXO)
 # ======================================================
 
 if not st.session_state.logado:
 
-    st.markdown('<div class="login-card">', unsafe_allow_html=True)
+    st.markdown("""
+    <style>
+    .login-card {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 90%;
+        max-width: 440px;
+        padding: 30px;
+        border-radius: 26px;
+        background: rgba(24,0,38,.78);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(168,85,247,.45);
+        box-shadow: 0 0 120px rgba(168,85,247,.9);
+        text-align: center;
+        z-index: 10;
+    }
 
-    st.markdown("## 🍀 Lotomilion Estrategista")
-    st.caption("Inteligência estatística aplicada à Lotofácil — **Acesso Premium**")
+    div[data-testid="stTextInput"] input {
+        background: rgba(255,255,255,.08);
+        border-radius: 10px;
+    }
+
+    div[data-testid="stButton"] button {
+        background: linear-gradient(90deg,#7C3AED,#A855F7);
+        border: none;
+        border-radius: 12px;
+        font-weight: bold;
+    }
+    </style>
+
+    <div class="login-card">
+        <h2>🍀 Lotomilion Estrategista</h2>
+        <p style="opacity:.85">
+            Inteligência estatística aplicada à Lotofácil<br>
+            <b>Acesso Premium</b>
+        </p>
+    """, unsafe_allow_html=True)
 
     email = st.text_input(
         "",
@@ -171,17 +176,4 @@ if not st.session_state.logado:
             st.stop()
 
         st.session_state.logado = True
-        st.session_state.email = email
-        st.rerun()
-
-    st.caption("🔒 Sistema estatístico • Não garante premiação")
-
-    st.markdown("</div>", unsafe_allow_html=True)
-    st.stop()
-
-# ======================================================
-# APP
-# ======================================================
-
-st.title("🟣 Lotomilion Estrategista")
-st.caption(f"🔐 Logado como {st.session_state.email}")
+        st.session_state.email_
