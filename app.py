@@ -1,5 +1,5 @@
 # ======================================================
-# Lotomilion Estrategista — Login Premium (FINAL REAL)
+# Lotomilion Estrategista — Login Premium (FINAL ESTÁVEL)
 # ======================================================
 
 import streamlit as st
@@ -25,7 +25,7 @@ if "logado" not in st.session_state:
     st.session_state.email = None
 
 # ======================================================
-# FUNDO ANIMADO (SEGURO)
+# FUNDO ANIMADO
 # ======================================================
 
 elementos = []
@@ -57,7 +57,7 @@ for _ in range(12):
 st.markdown(f"""
 <style>
 
-/* RESET */
+/* RESET STREAMLIT */
 html, body, [data-testid="stApp"] {{
     height: 100%;
 }}
@@ -91,7 +91,7 @@ header, footer {{
 
 @keyframes subir {{
     from {{ transform: translateY(0); }}
-    to   {{ transform: translateY(-160vh); }}
+    to {{ transform: translateY(-160vh); }}
 }}
 
 .trevo {{
@@ -212,7 +212,7 @@ if not st.session_state.logado:
     st.stop()
 
 # ======================================================
-# APP
+# APP PRINCIPAL
 # ======================================================
 
 st.title("🟣 Lotomilion Estrategista")
