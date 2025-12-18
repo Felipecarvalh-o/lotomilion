@@ -28,12 +28,11 @@ defaults = {
     "classificacao": None,
     "nome_estrategia": None
 }
-
 for k, v in defaults.items():
     st.session_state.setdefault(k, v)
 
 # ======================================================
-# ESTILO GLOBAL (PREMIUM)
+# ESTILO GLOBAL
 # ======================================================
 
 st.markdown("""
@@ -41,58 +40,57 @@ st.markdown("""
 header, footer { display: none; }
 
 [data-testid="stApp"] {
-    background: radial-gradient(circle at top, #1a002b, #050007 70%);
+    background: linear-gradient(180deg, #050007, #0B0B12);
 }
 
-/* HERO */
-.hero {
-    max-width: 900px;
-    margin: 18vh auto;
-    padding: 60px 50px;
-    text-align: center;
-    border-radius: 32px;
-    background: linear-gradient(180deg, rgba(40,0,70,.9), rgba(10,0,20,.95));
-    box-shadow:
-        0 0 120px rgba(168,85,247,.65),
-        inset 0 0 60px rgba(168,85,247,.15);
-}
-
-.hero h1 {
-    font-size: 42px;
-    font-weight: 900;
-}
-
-.hero p {
-    font-size: 16px;
-    opacity: .9;
-    margin: 20px 0 34px;
-}
-
-.hero-buttons {
-    display: flex;
-    gap: 18px;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-/* BOTÕES ROXOS */
+/* BOTÕES */
 div[data-testid="stButton"] button {
-    height: 52px;
-    min-width: 260px;
+    height: 48px;
     border-radius: 16px;
-    font-size: 16px;
     font-weight: 700;
     background: linear-gradient(90deg,#7C3AED,#A855F7);
     border: none;
     color: white;
 }
 
-/* MENU */
-section[data-testid="stSidebar"] div[role="radiogroup"] > label:has(input:checked) {
-    background: linear-gradient(90deg,#7C3AED,#A855F7);
-    color: white;
-    font-weight: 700;
-    border-radius: 10px;
+/* HERO */
+.hero {
+    position: relative;
+    max-width: 820px;
+    margin: 18vh auto;
+    padding: 64px 60px;
+    text-align: center;
+    border-radius: 36px;
+    background: linear-gradient(180deg, #2a0045, #12001f);
+    box-shadow:
+        0 40px 120px rgba(0,0,0,.9),
+        inset 0 0 80px rgba(168,85,247,.18);
+}
+
+.hero-glow {
+    position: absolute;
+    inset: -40px;
+    background: radial-gradient(circle, rgba(168,85,247,.35), transparent 70%);
+    filter: blur(60px);
+    z-index: -1;
+}
+
+.hero h1 {
+    font-size: 44px;
+    font-weight: 900;
+    margin-bottom: 18px;
+}
+
+.hero p {
+    font-size: 16px;
+    opacity: .9;
+    margin-bottom: 40px;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 18px;
+    justify-content: center;
 }
 
 /* UI */
@@ -117,28 +115,26 @@ section[data-testid="stSidebar"] div[role="radiogroup"] > label:has(input:checke
 """, unsafe_allow_html=True)
 
 # ======================================================
-# TELA INICIAL (CENTRAL PREMIUM)
+# TELA INICIAL
 # ======================================================
 
 if st.session_state.modo is None:
     st.markdown("""
     <div class="hero">
+        <div class="hero-glow"></div>
         <h1>🍀 Lotomilion Estrategista</h1>
         <p>
-            Inteligência estatística aplicada à Lotofácil<br>
+            Inteligência estatística aplicada à Lotofácil.<br>
             Teste gratuitamente no modo demonstração.
         </p>
+        <div class="hero-actions">
     """, unsafe_allow_html=True)
 
-    st.markdown("<div class='hero-buttons'>", unsafe_allow_html=True)
-
     c1, c2 = st.columns(2)
-
     with c1:
         if st.button("🚀 Entrar no modo Demonstração"):
             st.session_state.modo = "demo"
             st.rerun()
-
     with c2:
         if st.button("🔒 Já sou PRO"):
             st.session_state.modo = "pro"
@@ -162,7 +158,7 @@ menu = st.sidebar.radio(
 )
 
 # ======================================================
-# 📊 ESTRATÉGIAS AVANÇADAS
+# 📊 ESTRATÉGIAS
 # ======================================================
 
 if menu == "📊 Estratégias Avançadas":
@@ -185,6 +181,7 @@ if menu == "📊 Estratégias Avançadas":
                 st.rerun()
 
     if st.session_state.estrategia:
+
         st.markdown(
             f"<div class='badge'>📌 Estratégia ativa: <b>{st.session_state.nome_estrategia}</b></div>",
             unsafe_allow_html=True
@@ -195,7 +192,7 @@ if menu == "📊 Estratégias Avançadas":
                 st.session_state[k] = defaults[k]
             st.rerun()
 
-        # ================= FECHAMENTO 21 =================
+        # FECHAMENTO
         if st.session_state.estrategia == "fechamento":
 
             fixas_txt = st.text_area("🔒 9 dezenas FIXAS")
@@ -212,10 +209,8 @@ if menu == "📊 Estratégias Avançadas":
 
                 st.session_state.jogos = gerar_fechamento_21_8(dezenas)
 
-        # ================= HISTÓRICO REAL (100% SEGURO) =================
+        # HISTÓRICO REAL
         else:
-            st.info("📊 Geração automática baseada nos últimos sorteios reais.")
-
             if st.button("🧠 Gerar Jogos"):
                 historico = carregar_historico(qtd=50)
 
@@ -223,9 +218,9 @@ if menu == "📊 Estratégias Avançadas":
                 _, ranking = gerar_jogos_historico_real(base_fake, historico)
 
                 dezenas_base = (
-                    ranking["quentes"]
-                    + ranking["mornas"]
-                    + ranking["frias"]
+                    ranking["quentes"] +
+                    ranking["mornas"] +
+                    ranking["frias"]
                 )[:21]
 
                 jogos, classificacao = gerar_jogos_historico_real(
@@ -235,7 +230,6 @@ if menu == "📊 Estratégias Avançadas":
                 st.session_state.jogos = jogos
                 st.session_state.classificacao = classificacao
 
-    # ================= RESULTADOS =================
     if st.session_state.jogos:
         st.subheader("🎲 Jogos Gerados")
 
