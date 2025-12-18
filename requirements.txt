@@ -2,3 +2,6 @@ streamlit
 pandas
 plotly
 pyperclip
+supabase
+python-dateutil
+
