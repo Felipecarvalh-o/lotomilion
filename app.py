@@ -1,8 +1,9 @@
 # ======================================================
-# Lotomilion Estrategista — Login Premium (FINAL ABSOLUTO)
+# Lotomilion Estrategista — Login Premium (FINAL REAL)
 # ======================================================
 
 import streamlit as st
+import random
 from auth import verificar_usuario
 
 # ======================================================
@@ -24,27 +25,53 @@ if "logado" not in st.session_state:
     st.session_state.email = None
 
 # ======================================================
-# CSS + FUNDO (100% SEGURO)
+# FUNDO ANIMADO (SEGURO)
 # ======================================================
 
-st.markdown("""
+elementos = []
+
+for _ in range(14):
+    elementos.append(
+        f"""
+        <div class="float trevo"
+             style="left:{random.randint(0,100)}%;
+                    font-size:{random.choice([26,34,42])}px;
+                    animation-duration:{random.randint(26,42)}s;">
+            🍀
+        </div>
+        """
+    )
+
+for _ in range(12):
+    elementos.append(
+        f"""
+        <div class="float numero"
+             style="left:{random.randint(0,100)}%;
+                    font-size:{random.choice([22,28,34])}px;
+                    animation-duration:{random.randint(28,44)}s;">
+            {random.choice(['01','03','05','07','10','13','15','18','21','25'])}
+        </div>
+        """
+    )
+
+st.markdown(f"""
 <style>
 
 /* RESET */
-html, body, [data-testid="stApp"] {
+html, body, [data-testid="stApp"] {{
     height: 100%;
-}
+}}
 
-[data-testid="stAppViewContainer"] > .main {
+[data-testid="stAppViewContainer"] > .main {{
     padding: 0;
-}
+}}
 
-header, footer {
+header, footer {{
     display: none;
-}
+}}
 
-/* FUNDO ANIMADO */
-.login-bg {
+/* FUNDO */
+.login-bg {{
     position: fixed;
     inset: 0;
     z-index: 0;
@@ -52,86 +79,94 @@ header, footer {
     background:
         radial-gradient(circle at top, rgba(168,85,247,.25), transparent 55%),
         linear-gradient(180deg, #12001B, #050007);
-}
+}}
 
-.login-bg::before {
-    content: "🍀 🍀 🍀 🍀 🍀 🍀 🍀 🍀 🍀 🍀 01 03 05 07 10 13 15 18 21 25";
+.float {{
     position: absolute;
-    inset: -200%;
-    font-size: 48px;
-    opacity: 0.12;
-    color: #A855F7;
-    animation: subir 40s linear infinite;
-    white-space: nowrap;
-}
+    bottom: -120px;
+    opacity: 0.18;
+    animation: subir linear infinite;
+    pointer-events: none;
+}}
 
-@keyframes subir {
-    from { transform: translateY(0); }
-    to   { transform: translateY(-50%); }
-}
+@keyframes subir {{
+    from {{ transform: translateY(0); }}
+    to   {{ transform: translateY(-160vh); }}
+}}
+
+.trevo {{
+    color: #A855F7;
+    text-shadow: 0 0 24px rgba(168,85,247,.8);
+}}
+
+.numero {{
+    color: #22C55E;
+    font-weight: 700;
+    text-shadow: 0 0 18px rgba(34,197,94,.6);
+}}
 
 /* WRAPPER */
-.login-wrapper {
+.login-wrapper {{
     height: 100vh;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: center;
-    padding-top: 12vh;
-    padding-left: 12px;
-    padding-right: 12px;
     position: relative;
     z-index: 5;
-}
+    padding: 12px;
+}}
 
 /* CARD */
-.login-card {
+.login-card {{
     width: 100%;
     max-width: 420px;
-    padding: 30px 26px;
-    border-radius: 28px;
-    background: rgba(24,0,38,.68);
+    padding: 26px;
+    border-radius: 26px;
+    background: rgba(24,0,38,.7);
     backdrop-filter: blur(16px);
     border: 1px solid rgba(168,85,247,.45);
-    box-shadow: 0 0 140px rgba(168,85,247,.85);
+    box-shadow: 0 0 140px rgba(168,85,247,.9);
     text-align: center;
-}
+}}
 
 /* TEXTO */
-.login-title {
-    font-size: 26px;
+.login-title {{
+    font-size: 24px;
     font-weight: 700;
     margin-bottom: 6px;
-}
+}}
 
-.login-sub {
+.login-sub {{
     font-size: 14px;
     opacity: .85;
     margin-bottom: 14px;
-}
+}}
 
 /* INPUT */
-div[data-testid="stTextInput"] input {
+div[data-testid="stTextInput"] input {{
     background: rgba(255,255,255,.08);
     border-radius: 10px;
-}
+}}
 
 /* BOTÃO */
-div[data-testid="stButton"] button {
+div[data-testid="stButton"] button {{
     background: linear-gradient(90deg,#7C3AED,#A855F7);
     border: none;
     border-radius: 12px;
-}
+}}
 
 /* CAPTION */
-.login-caption {
+.login-caption {{
     margin-top: 12px;
     font-size: 12px;
     opacity: .6;
-}
+}}
 
 </style>
 
-<div class="login-bg"></div>
+<div class="login-bg">
+    {''.join(elementos)}
+</div>
 """, unsafe_allow_html=True)
 
 # ======================================================
