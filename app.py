@@ -1,5 +1,5 @@
 # ======================================================
-# Lotomilion Estrategista — Login Premium FINAL (FIX)
+# Lotomilion Estrategista — Login Premium FINAL (UX FIX)
 # ======================================================
 
 import streamlit as st
@@ -25,27 +25,27 @@ if "logado" not in st.session_state:
     st.session_state.email = None
 
 # ======================================================
-# CSS GLOBAL + FUNDO ANIMADO (STREAMLIT SAFE)
+# FUNDO ANIMADO
 # ======================================================
 
 elementos = []
 
-for _ in range(30):
+for _ in range(28):
     elementos.append(
         f"""<div class="float trevo"
              style="left:{random.randint(0,100)}%;
-                    font-size:{random.choice([36,48,64,78])}px;
-                    animation-duration:{random.randint(26,42)}s;">
+                    font-size:{random.choice([40,54,70])}px;
+                    animation-duration:{random.randint(28,44)}s;">
             🍀
         </div>"""
     )
 
-for _ in range(22):
+for _ in range(20):
     elementos.append(
         f"""<div class="float numero {random.choice(['n1','n2','n3','n4'])}"
              style="left:{random.randint(0,100)}%;
-                    font-size:{random.choice([28,36,44,52])}px;
-                    animation-duration:{random.randint(28,46)}s;">
+                    font-size:{random.choice([30,38,46])}px;
+                    animation-duration:{random.randint(30,48)}s;">
             {random.choice(['01','03','05','07','10','13','15','18','21','25'])}
         </div>"""
     )
@@ -53,7 +53,7 @@ for _ in range(22):
 st.markdown(f"""
 <style>
 
-/* RESET STREAMLIT */
+/* RESET */
 html, body, [data-testid="stApp"] {{
     height: 100%;
 }}
@@ -66,13 +66,10 @@ header, footer {{
     display: none;
 }}
 
-/* FUNDO ANIMADO */
+/* FUNDO */
 .login-bg {{
     position: fixed;
     inset: 0;
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
     z-index: 0;
     pointer-events: none;
     background: radial-gradient(circle at top, #1B0A2A, #050007);
@@ -82,14 +79,17 @@ header, footer {{
     position: absolute;
     bottom: -140px;
     opacity: 0.22;
-    animation-name: subir;
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
+    animation: subir linear infinite;
+}}
+
+@keyframes subir {{
+    from {{ transform: translateY(0); }}
+    to {{ transform: translateY(-170vh); }}
 }}
 
 .trevo {{
     color: #A855F7;
-    text-shadow: 0 0 30px rgba(168,85,247,.9);
+    text-shadow: 0 0 28px rgba(168,85,247,.9);
 }}
 
 .numero {{
@@ -102,12 +102,7 @@ header, footer {{
 .n3 {{ color:#22C55E; }}
 .n4 {{ color:#EC4899; }}
 
-@keyframes subir {{
-    from {{ transform: translateY(0); }}
-    to {{ transform: translateY(-170vh); }}
-}}
-
-/* LOGIN CENTER FIX */
+/* LOGIN */
 .login-wrapper {{
     min-height: 100vh;
     display: flex;
@@ -120,12 +115,26 @@ header, footer {{
 .login-card {{
     width: 100%;
     max-width: 420px;
-    padding: 36px;
+    padding: 34px;
     border-radius: 26px;
     background: linear-gradient(160deg,#14001F,#1F0030);
-    box-shadow: 0 0 110px rgba(168,85,247,.6);
+    box-shadow: 0 0 100px rgba(168,85,247,.6);
     border: 1px solid #2E1065;
     text-align: center;
+}}
+
+.login-card input {{
+    margin-top: 14px;
+}}
+
+.login-card button {{
+    margin-top: 16px;
+}}
+
+.login-caption {{
+    margin-top: 14px;
+    font-size: 13px;
+    opacity: .7;
 }}
 
 </style>
@@ -141,39 +150,40 @@ header, footer {{
 
 if not st.session_state.logado:
 
-    st.markdown("""
-    <div class="login-wrapper">
-        <div class="login-card">
+    with st.container():
+        st.markdown('<div class="login-wrapper"><div class="login-card">', unsafe_allow_html=True)
+
+        st.markdown("""
             <h2>🍀 Lotomilion Estrategista</h2>
-            <p style="opacity:.85;margin-bottom:20px;">
+            <p style="opacity:.85;">
                 Inteligência estatística aplicada à Lotofácil<br>
                 <b>Acesso Premium</b>
             </p>
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
 
-    email = st.text_input(
-        "",
-        placeholder="seu@email.com",
-        label_visibility="collapsed"
-    )
+        email = st.text_input(
+            "",
+            placeholder="seu@email.com",
+            label_visibility="collapsed"
+        )
 
-    if st.button("Entrar no Painel Premium", use_container_width=True):
-        ok, msg = verificar_usuario(email)
-        if not ok:
-            st.error(msg)
-            st.stop()
+        if st.button("Entrar no Painel Premium", use_container_width=True):
+            ok, msg = verificar_usuario(email)
+            if not ok:
+                st.error(msg)
+                st.stop()
 
-        st.session_state.logado = True
-        st.session_state.email = email
-        st.rerun()
+            st.session_state.logado = True
+            st.session_state.email = email
+            st.rerun()
 
-    st.caption("🔒 Sistema estatístico • Não garante premiação")
+        st.markdown('<div class="login-caption">🔒 Sistema estatístico • Não garante premiação</div>', unsafe_allow_html=True)
 
-    st.markdown("</div></div>", unsafe_allow_html=True)
-    st.stop()
+        st.markdown('</div></div>', unsafe_allow_html=True)
+        st.stop()
 
 # ======================================================
-# APP PRINCIPAL
+# APP
 # ======================================================
 
 st.title("🟣 Lotomilion Estrategista")
