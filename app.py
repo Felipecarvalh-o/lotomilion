@@ -1,142 +1,126 @@
 # ======================================================
-# Lotomilion Estrategista — Login Premium (FINAL ESTÁVEL)
+# Lotomilion Estrategista — Login Premium (VERSÃO CERTA)
 # ======================================================
 
 import streamlit as st
-import random
 import streamlit.components.v1 as components
 from auth import verificar_usuario
-
-# ======================================================
-# CONFIG
-# ======================================================
 
 st.set_page_config(
     page_title="Lotomilion Estrategista",
     page_icon="🍀",
-    layout="centered"
+    layout="wide"
 )
-
-# ======================================================
-# SESSION
-# ======================================================
 
 if "logado" not in st.session_state:
     st.session_state.logado = False
     st.session_state.email = None
 
 # ======================================================
-# FUNDO ANIMADO (ISOLADO — SEM BUG)
-# ======================================================
-
-elementos = ""
-
-for _ in range(14):
-    elementos += f"""
-    <div class="float trevo"
-         style="left:{random.randint(0,100)}%;
-                font-size:{random.choice([26,34,42])}px;
-                animation-duration:{random.randint(28,44)}s;">
-        🍀
-    </div>
-    """
-
-for _ in range(12):
-    elementos += f"""
-    <div class="float numero"
-         style="left:{random.randint(0,100)}%;
-                font-size:{random.choice([22,28,34])}px;
-                animation-duration:{random.randint(30,46)}s;">
-        {random.choice(['01','03','05','07','10','13','15','18','21','25'])}
-    </div>
-    """
-
-components.html(
-f"""
-<!DOCTYPE html>
-<html>
-<head>
-<style>
-html, body {{
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    overflow: hidden;
-}}
-
-.bg {{
-    position: fixed;
-    inset: 0;
-    background:
-        radial-gradient(circle at top, rgba(168,85,247,.25), transparent 55%),
-        linear-gradient(180deg, #12001B, #050007);
-    overflow: hidden;
-}}
-
-.float {{
-    position: absolute;
-    bottom: -120px;
-    opacity: 0.18;
-    animation: subir linear infinite;
-    pointer-events: none;
-}}
-
-@keyframes subir {{
-    from {{ transform: translateY(0); }}
-    to {{ transform: translateY(-160vh); }}
-}}
-
-.trevo {{
-    color: #A855F7;
-    text-shadow: 0 0 24px rgba(168,85,247,.9);
-}}
-
-.numero {{
-    color: #22C55E;
-    font-weight: 700;
-    text-shadow: 0 0 18px rgba(34,197,94,.7);
-}}
-</style>
-</head>
-<body>
-<div class="bg">
-    {elementos}
-</div>
-</body>
-</html>
-""",
-height=0,
-)
-
-# ======================================================
-# LOGIN (STREAMLIT PURO — SEM HTML QUEBRADO)
+# LOGIN EM HTML (SEM STREAMLIT UI)
 # ======================================================
 
 if not st.session_state.logado:
 
-    st.markdown("<br><br><br>", unsafe_allow_html=True)
+    components.html(
+    """
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <style>
+    html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        background:
+            radial-gradient(circle at top, rgba(168,85,247,.35), transparent 55%),
+            linear-gradient(180deg, #12001B, #050007);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        font-family: sans-serif;
+    }
 
-    with st.container():
-        st.markdown("## 🍀 Lotomilion Estrategista")
-        st.caption("Inteligência estatística aplicada à Lotofácil — **Acesso Premium**")
+    .card {
+        width: 100%;
+        max-width: 420px;
+        padding: 28px;
+        border-radius: 26px;
+        background: rgba(24,0,38,.75);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(168,85,247,.45);
+        box-shadow: 0 0 140px rgba(168,85,247,.9);
+        text-align: center;
+        color: #fff;
+    }
 
-        email = st.text_input(
-            "",
-            placeholder="seu@email.com",
-            label_visibility="collapsed"
-        )
+    h1 {
+        font-size: 26px;
+        margin-bottom: 6px;
+    }
 
-        if st.button("Entrar no Painel Premium", use_container_width=True):
-            ok, msg = verificar_usuario(email)
-            if not ok:
-                st.error(msg)
-                st.stop()
+    p {
+        font-size: 14px;
+        opacity: .85;
+        margin-bottom: 18px;
+    }
 
+    input {
+        width: 100%;
+        padding: 12px;
+        border-radius: 10px;
+        border: none;
+        margin-bottom: 14px;
+        background: rgba(255,255,255,.1);
+        color: white;
+        font-size: 14px;
+    }
+
+    button {
+        width: 100%;
+        padding: 12px;
+        border-radius: 12px;
+        border: none;
+        background: linear-gradient(90deg,#7C3AED,#A855F7);
+        color: white;
+        font-weight: bold;
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+    .caption {
+        margin-top: 14px;
+        font-size: 12px;
+        opacity: .6;
+    }
+    </style>
+    </head>
+
+    <body>
+        <form class="card" method="POST">
+            <h1>🍀 Lotomilion Estrategista</h1>
+            <p>Inteligência estatística aplicada à Lotofácil<br><b>Acesso Premium</b></p>
+            <input name="email" placeholder="seu@email.com" />
+            <button type="submit">Entrar no Painel Premium</button>
+            <div class="caption">🔒 Sistema estatístico • Não garante premiação</div>
+        </form>
+    </body>
+    </html>
+    """,
+    height=520
+    )
+
+    # captura do email
+    email = st.experimental_get_query_params().get("email")
+    if email:
+        ok, msg = verificar_usuario(email[0])
+        if ok:
             st.session_state.logado = True
-            st.session_state.email = email
+            st.session_state.email = email[0]
             st.rerun()
-
-        st.caption("🔒 Sistema estatístico • Não garante premiação")
+        else:
+            st.error(msg)
 
     st.stop()
 
