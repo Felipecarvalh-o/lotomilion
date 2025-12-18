@@ -1,5 +1,5 @@
 # ======================================================
-# Lotomilion Estrategista — Login Premium REAL
+# Lotomilion Estrategista — Login Premium Chamativo
 # ======================================================
 
 import streamlit as st
@@ -50,30 +50,30 @@ input, button {
 
 if not st.session_state.logado:
 
-    # -------- FUNDO ANIMADO (HTML REAL) --------
+    # -------- FUNDO ANIMADO --------
     elementos = []
 
-    for _ in range(14):
+    for _ in range(16):
         elementos.append(
             f"""
             <div class="float trevo"
                  style="
                     left:{random.randint(0,100)}%;
                     font-size:{random.choice([42,54,66,78])}px;
-                    animation-delay:{random.randint(0,25)}s;">
+                    animation-delay:{random.randint(0,30)}s;">
                 🍀
             </div>
             """
         )
 
-    for _ in range(10):
+    for _ in range(12):
         elementos.append(
             f"""
             <div class="float numero {random.choice(['n1','n2','n3','n4'])}"
                  style="
                     left:{random.randint(0,100)}%;
                     font-size:{random.choice([36,44,52])}px;
-                    animation-delay:{random.randint(0,30)}s;">
+                    animation-delay:{random.randint(0,35)}s;">
                 {random.choice(['07','10','13','18','21','25'])}
             </div>
             """
@@ -93,14 +93,14 @@ if not st.session_state.logado:
         .float {{
             position: absolute;
             bottom: -120px;
-            opacity: 0.14;
-            animation: subir 30s linear infinite;
-            filter: blur(0.6px);
+            opacity: 0.18;
+            animation: subir 28s linear infinite;
+            filter: blur(0.4px);
         }}
 
         .trevo {{
             color: #A855F7;
-            text-shadow: 0 0 24px rgba(168,85,247,.8);
+            text-shadow: 0 0 28px rgba(168,85,247,.9);
         }}
 
         .n1 {{ color:#FACC15; }}
@@ -110,7 +110,7 @@ if not st.session_state.logado:
 
         @keyframes subir {{
             from {{ transform: translateY(0) rotate(0deg); }}
-            to {{ transform: translateY(-140vh) rotate(360deg); }}
+            to {{ transform: translateY(-150vh) rotate(360deg); }}
         }}
 
         .card {{
@@ -119,7 +119,7 @@ if not st.session_state.logado:
             padding: 32px;
             border-radius: 26px;
             background: linear-gradient(160deg, #14001F, #1F0030);
-            box-shadow: 0 0 70px rgba(168,85,247,.45);
+            box-shadow: 0 0 80px rgba(168,85,247,.5);
             border: 1px solid #2E1065;
             text-align: center;
             position: relative;
@@ -130,19 +130,32 @@ if not st.session_state.logado:
         <div class="login-bg">
             {''.join(elementos)}
         </div>
-
-        <div class="card">
-            <h2>🍀 Lotomilion Estrategista</h2>
-            <p>Inteligência estatística aplicada à Lotofácil<br>
-            <b>Acesso Premium</b></p>
-        </div>
         """,
-        height=0
+        height=600   <!-- 🔥 ISSO É O QUE SALVA TUDO -->
     )
 
-    # -------- FORM --------
+    # -------- CARD --------
+    st.markdown("""
+    <div style="
+        max-width:420px;
+        margin:0 auto;
+        padding:32px;
+        border-radius:26px;
+        background:linear-gradient(160deg,#14001F,#1F0030);
+        box-shadow:0 0 80px rgba(168,85,247,.45);
+        border:1px solid #2E1065;
+        text-align:center;
+        position:relative;
+        z-index:4;
+    ">
+        <h2>🍀 Lotomilion Estrategista</h2>
+        <p>Inteligência estatística aplicada à Lotofácil<br>
+        <b>Acesso Premium</b></p>
+    </div>
+    """, unsafe_allow_html=True)
+
     email = st.text_input(
-        "Email",
+        "",
         placeholder="seu@email.com",
         label_visibility="collapsed"
     )
