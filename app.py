@@ -19,8 +19,7 @@ st.set_page_config(
 # SESSION STATE
 # ======================================================
 
-if "modo" not in st.session_state:
-    st.session_state.modo = None  # demo | pro
+st.session_state.setdefault("modo", None)
 
 defaults = {
     "estrategia": None,
@@ -40,38 +39,50 @@ st.markdown("""
 header, footer { display: none; }
 
 [data-testid="stApp"] {
-    background: linear-gradient(180deg, #050007, #0B0B12);
+    background:
+        radial-gradient(circle at center, rgba(168,85,247,.18), transparent 55%),
+        linear-gradient(180deg, #050007, #0B0B12);
 }
 
 /* BOTÕES */
 div[data-testid="stButton"] button {
-    height: 48px;
+    height: 50px;
     border-radius: 16px;
     font-weight: 700;
     background: linear-gradient(90deg,#7C3AED,#A855F7);
     border: none;
     color: white;
+    box-shadow: 0 10px 30px rgba(168,85,247,.45);
 }
 
 /* HERO */
+.hero-wrapper {
+    position: relative;
+    margin-top: 18vh;
+    display: flex;
+    justify-content: center;
+}
+
 .hero {
     position: relative;
+    width: 100%;
     max-width: 820px;
-    margin: 18vh auto;
     padding: 64px 60px;
     text-align: center;
     border-radius: 36px;
     background: linear-gradient(180deg, #2a0045, #12001f);
     box-shadow:
-        0 40px 120px rgba(0,0,0,.9),
-        inset 0 0 80px rgba(168,85,247,.18);
+        0 50px 140px rgba(0,0,0,.9),
+        inset 0 0 120px rgba(168,85,247,.25);
+    z-index: 2;
 }
 
-.hero-glow {
+.hero::before {
+    content: "";
     position: absolute;
-    inset: -40px;
-    background: radial-gradient(circle, rgba(168,85,247,.35), transparent 70%);
-    filter: blur(60px);
+    inset: -80px;
+    background: radial-gradient(circle, rgba(168,85,247,.45), transparent 70%);
+    filter: blur(80px);
     z-index: -1;
 }
 
@@ -84,16 +95,8 @@ div[data-testid="stButton"] button {
 .hero p {
     font-size: 16px;
     opacity: .9;
-    margin-bottom: 40px;
 }
 
-.hero-actions {
-    display: flex;
-    gap: 18px;
-    justify-content: center;
-}
-
-/* UI */
 .badge {
     background:#2A0934;
     padding:10px 16px;
@@ -119,28 +122,33 @@ div[data-testid="stButton"] button {
 # ======================================================
 
 if st.session_state.modo is None:
+
     st.markdown("""
-    <div class="hero">
-        <div class="hero-glow"></div>
-        <h1>🍀 Lotomilion Estrategista</h1>
-        <p>
-            Inteligência estatística aplicada à Lotofácil.<br>
-            Teste gratuitamente no modo demonstração.
-        </p>
-        <div class="hero-actions">
+    <div class="hero-wrapper">
+        <div class="hero">
+            <h1>🍀 Lotomilion Estrategista</h1>
+            <p>
+                Inteligência estatística aplicada à Lotofácil.<br>
+                Teste gratuitamente no modo demonstração.
+            </p>
+        </div>
+    </div>
     """, unsafe_allow_html=True)
 
-    c1, c2 = st.columns(2)
-    with c1:
-        if st.button("🚀 Entrar no modo Demonstração"):
+    st.markdown("<br><br>", unsafe_allow_html=True)
+
+    c1, c2, c3, c4, c5 = st.columns([2,3,1,3,2])
+
+    with c2:
+        if st.button("🚀 Entrar no modo Demonstração", use_container_width=True):
             st.session_state.modo = "demo"
             st.rerun()
-    with c2:
-        if st.button("🔒 Já sou PRO"):
+
+    with c4:
+        if st.button("🔒 Já sou PRO", use_container_width=True):
             st.session_state.modo = "pro"
             st.rerun()
 
-    st.markdown("</div></div>", unsafe_allow_html=True)
     st.stop()
 
 # ======================================================
@@ -192,7 +200,6 @@ if menu == "📊 Estratégias Avançadas":
                 st.session_state[k] = defaults[k]
             st.rerun()
 
-        # FECHAMENTO
         if st.session_state.estrategia == "fechamento":
 
             fixas_txt = st.text_area("🔒 9 dezenas FIXAS")
@@ -209,7 +216,6 @@ if menu == "📊 Estratégias Avançadas":
 
                 st.session_state.jogos = gerar_fechamento_21_8(dezenas)
 
-        # HISTÓRICO REAL
         else:
             if st.button("🧠 Gerar Jogos"):
                 historico = carregar_historico(qtd=50)
