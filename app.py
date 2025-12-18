@@ -1,3 +1,7 @@
+# ======================================================
+# Lotomilion Estrategista — App Premium
+# ======================================================
+
 from data.lotofacil_historico import carregar_historico
 from engine import gerar_fechamento_21_8, gerar_historico_21_automatico
 from simulador import simular_cenario
@@ -6,176 +10,179 @@ from auth import verificar_usuario
 
 import streamlit as st
 
-# ================= CONFIG =================
+# ======================================================
+# CONFIGURAÇÃO GLOBAL
+# ======================================================
+
 st.set_page_config(
     page_title="Lotomilion Estrategista",
     page_icon="🟣",
     layout="centered"
 )
 
-# ================= LOGIN STATE =================
+# ======================================================
+# SESSION STATE — AUTH
+# ======================================================
+
 if "logado" not in st.session_state:
     st.session_state.logado = False
     st.session_state.email = None
 
-# ================= LOGIN PREMIUM =================
+# ======================================================
+# ESTILO GLOBAL — DESIGN SYSTEM
+# ======================================================
+
+st.markdown("""
+<style>
+:root {
+    --bg: #050007;
+    --card: #14001F;
+    --card-2: #1F0030;
+    --primary: #C026D3;
+    --secondary: #7C3AED;
+    --text: #EDE9FE;
+    --muted: #A78BFA;
+    --border: #2E1065;
+    --success: #00E676;
+}
+
+html, body, [data-testid="stApp"] {
+    background: radial-gradient(circle at top, #1B0A2A, var(--bg));
+    color: var(--text);
+}
+
+.card {
+    background: linear-gradient(160deg, var(--card), var(--card-2));
+    border-radius: 26px;
+    padding: 26px;
+    border: 1px solid var(--border);
+    box-shadow: 0 0 50px rgba(192,38,211,.25);
+    margin-bottom: 24px;
+}
+
+.card-title {
+    font-size: 22px;
+    font-weight: 900;
+    margin-bottom: 6px;
+}
+
+.card-sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 18px;
+}
+
+.badge {
+    background: #2A0934;
+    padding: 10px 16px;
+    border-radius: 16px;
+    font-size: 14px;
+    margin-bottom: 14px;
+}
+
+.numero {
+    background: linear-gradient(145deg, var(--secondary), var(--primary));
+    padding: 14px;
+    border-radius: 18px;
+    font-size: 16px;
+    font-weight: 800;
+    text-align: center;
+    position: relative;
+}
+
+.acerto {
+    outline: 3px solid var(--success);
+    box-shadow: 0 0 18px rgba(0,230,118,.7);
+}
+
+.trofeu {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    font-size: 14px;
+}
+
+.footer {
+    font-size: 12px;
+    color: #888;
+    text-align: center;
+    margin-top: 24px;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# ======================================================
+# LOGIN PREMIUM
+# ======================================================
+
 if not st.session_state.logado:
     st.markdown("""
-    <style>
-    body {
-        background: radial-gradient(circle at top, #1B0A2A, #050007);
-    }
-
-    .login-bg {
-        position: fixed;
-        inset: 0;
-        overflow: hidden;
-        z-index: -1;
-    }
-
-    .float {
-        position: absolute;
-        font-size: 48px;
-        opacity: 0.08;
-        animation: float 18s infinite linear;
-        color: #9C27B0;
-    }
-
-    @keyframes float {
-        from { transform: translateY(110vh) rotate(0deg); }
-        to { transform: translateY(-120vh) rotate(360deg); }
-    }
-
-    .login-box {
-        background: linear-gradient(145deg, #14001F, #1F0030);
-        padding: 34px;
-        border-radius: 26px;
-        border: 1px solid #3A0A52;
-        max-width: 420px;
-        margin: 12vh auto;
-        text-align: center;
-        box-shadow: 0 0 40px rgba(156,39,176,.35);
-    }
-
-    .login-title {
-        font-size: 28px;
-        font-weight: 900;
-        color: #E1BEE7;
-        margin-bottom: 6px;
-        letter-spacing: .5px;
-    }
-
-    .login-sub {
-        color: #B388EB;
-        font-size: 14px;
-        margin-bottom: 22px;
-    }
-
-    .login-foot {
-        font-size: 12px;
-        color: #888;
-        margin-top: 16px;
-    }
-    </style>
-
-    <div class="login-bg">
-        <div class="float" style="left:10%">🍀</div>
-        <div class="float" style="left:30%; animation-delay:2s;">07</div>
-        <div class="float" style="left:50%; animation-delay:6s;">🍀</div>
-        <div class="float" style="left:70%; animation-delay:4s;">13</div>
-        <div class="float" style="left:85%; animation-delay:8s;">🍀</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.markdown("""
-    <div class="login-box">
-        <div class="login-title">🍀 Lotomilion Estrategista</div>
-        <div class="login-sub">
+    <div class="card" style="max-width:420px;margin:12vh auto;text-align:center">
+        <div class="card-title">🍀 Lotomilion Estrategista</div>
+        <div class="card-sub">
             Inteligência estatística aplicada à Lotofácil<br>
             <b>Acesso exclusivo para membros</b>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-    email = st.text_input("📧 Email usado na compra")
+    email = st.text_input(
+        "Email",
+        placeholder="seu@email.com",
+        label_visibility="collapsed"
+    )
 
-    if st.button("🔓 Acessar painel premium", use_container_width=True):
-        ok, resultado = verificar_usuario(email)
+    if st.button("Entrar no Painel Premium", use_container_width=True):
+        ok, msg = verificar_usuario(email)
 
         if not ok:
-            st.error(resultado)
+            st.error(msg)
             st.stop()
 
         st.session_state.logado = True
         st.session_state.email = email
         st.rerun()
 
-    st.markdown("<div class='login-foot'>🔒 Sistema estatístico • Não garante premiação</div>", unsafe_allow_html=True)
+    st.markdown("<div class='footer'>🔒 Sistema estatístico • Não garante premiação</div>", unsafe_allow_html=True)
     st.stop()
 
+# ======================================================
+# SESSION STATE — APP
+# ======================================================
 
-# ================= SESSION STATE APP =================
 defaults = {
     "estrategia": None,
+    "nome_estrategia": None,
     "jogos": None,
     "classificacao": None,
     "resultado_real": None,
     "comparacao_ativa": False,
-    "nome_estrategia": None,
     "resumo_simulacao": None
 }
+
 for k, v in defaults.items():
     st.session_state.setdefault(k, v)
 
-# ================= ESTILO =================
-st.markdown("""
-<style>
-.badge {
-    background:#2A0934;
-    padding:10px 16px;
-    border-radius:16px;
-    font-size:14px;
-    margin-bottom:14px;
-}
-.numero {
-    padding:14px;
-    border-radius:16px;
-    font-size:16px;
-    font-weight:700;
-    text-align:center;
-    color:white;
-    background:#6A1B9A;
-    position:relative;
-}
-.acerto {
-    border:2px solid #00E676;
-    box-shadow:0 0 14px rgba(0,230,118,.8);
-}
-.trofeu {
-    position:absolute;
-    top:-6px;
-    right:-6px;
-    font-size:14px;
-}
-.painel {
-    background:#0F0F0F;
-    padding:20px;
-    border-radius:18px;
-    margin-top:20px;
-    border:1px solid #2A0934;
-}
-</style>
-""", unsafe_allow_html=True)
+# ======================================================
+# HEADER
+# ======================================================
 
-# ================= TOPO =================
 st.title("🟣 Lotomilion Estrategista")
 st.caption(f"🔐 Acesso ativo • {st.session_state.email}")
 
-# ================= MENU =================
+# ======================================================
+# ESCOLHA DE ESTRATÉGIA
+# ======================================================
+
 if not st.session_state.estrategia:
-    st.subheader("🎯 Escolha a Estratégia")
+    st.markdown("""
+    <div class="card">
+        <div class="card-title">🎯 Escolha sua Estratégia</div>
+        <div class="card-sub">Selecione o modelo estatístico desejado</div>
+    """, unsafe_allow_html=True)
 
     c1, c2 = st.columns(2)
+
     with c1:
         if st.button("🎯 Fechamento 21", use_container_width=True):
             st.session_state.estrategia = "fechamento"
@@ -183,12 +190,17 @@ if not st.session_state.estrategia:
             st.rerun()
 
     with c2:
-        if st.button("📊 Histórico Real Automático", use_container_width=True):
+        if st.button("📊 Histórico Inteligente", use_container_width=True):
             st.session_state.estrategia = "historico"
             st.session_state.nome_estrategia = "Histórico Real"
             st.rerun()
 
-# ================= BADGE =================
+    st.markdown("</div>", unsafe_allow_html=True)
+
+# ======================================================
+# ESTRATÉGIA ATIVA
+# ======================================================
+
 if st.session_state.estrategia:
     st.markdown(
         f"<div class='badge'>📌 Estratégia ativa: <b>{st.session_state.nome_estrategia}</b></div>",
@@ -200,23 +212,46 @@ if st.session_state.estrategia:
             st.session_state[k] = defaults[k]
         st.rerun()
 
-    # ================= RESULTADO =================
-    st.subheader("📥 Resultado Oficial (opcional)")
-    resultado_txt = st.text_input("Resultado do sorteio (15 dezenas)")
+    # --------------------------------------------------
+    # RESULTADO OFICIAL
+    # --------------------------------------------------
 
-    if st.button("📊 Ativar Comparação"):
+    st.markdown("""
+    <div class="card">
+        <div class="card-title">📥 Resultado Oficial (opcional)</div>
+        <div class="card-sub">Use para comparar o desempenho</div>
+    """, unsafe_allow_html=True)
+
+    resultado_txt = st.text_input(
+        "Resultado",
+        placeholder="01 02 03 04 ...",
+        label_visibility="collapsed"
+    )
+
+    if st.button("Ativar Comparação"):
         resultado = converter_lista(resultado_txt)
         if len(resultado) == 15:
             st.session_state.resultado_real = resultado
             st.session_state.comparacao_ativa = True
+            st.success("Comparação ativada")
         else:
             st.warning("Informe exatamente 15 dezenas.")
 
-    # ================= FECHAMENTO =================
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # --------------------------------------------------
+    # FECHAMENTO
+    # --------------------------------------------------
+
     if st.session_state.estrategia == "fechamento":
-        st.subheader("🧩 Base de 21 dezenas")
-        fixas_txt = st.text_area("🔒 9 FIXAS")
-        variaveis_txt = st.text_area("🔄 12 VARIÁVEIS")
+        st.markdown("""
+        <div class="card">
+            <div class="card-title">🧩 Base de 21 dezenas</div>
+            <div class="card-sub">Informe fixas e variáveis</div>
+        """, unsafe_allow_html=True)
+
+        fixas_txt = st.text_area("Fixas", placeholder="9 dezenas", label_visibility="collapsed")
+        variaveis_txt = st.text_area("Variáveis", placeholder="12 dezenas", label_visibility="collapsed")
 
         if st.button("🧠 Gerar Jogos"):
             dezenas = sorted(set(converter_lista(fixas_txt) + converter_lista(variaveis_txt)))
@@ -228,8 +263,19 @@ if st.session_state.estrategia:
             st.session_state.jogos = jogos
             st.session_state.resumo_simulacao = simular_cenario(jogos)
 
-    # ================= HISTÓRICO =================
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    # --------------------------------------------------
+    # HISTÓRICO
+    # --------------------------------------------------
+
     if st.session_state.estrategia == "historico":
+        st.markdown("""
+        <div class="card">
+            <div class="card-title">📊 Análise Histórica</div>
+            <div class="card-sub">Baseado nos últimos concursos</div>
+        """, unsafe_allow_html=True)
+
         if st.button("🧠 Analisar histórico e gerar jogos"):
             historico = carregar_historico(qtd=50)
             jogos, classificacao = gerar_historico_21_automatico(historico)
@@ -238,11 +284,19 @@ if st.session_state.estrategia:
             st.session_state.classificacao = classificacao
             st.session_state.resumo_simulacao = simular_cenario(jogos)
 
-# ================= PAINEL =================
+        st.markdown("</div>", unsafe_allow_html=True)
+
+# ======================================================
+# PERFORMANCE
+# ======================================================
+
 if st.session_state.resumo_simulacao:
     r = st.session_state.resumo_simulacao
-    st.markdown("<div class='painel'>", unsafe_allow_html=True)
-    st.subheader("📊 Performance Estatística")
+
+    st.markdown("""
+    <div class="card">
+        <div class="card-title">📊 Performance Estatística</div>
+    """, unsafe_allow_html=True)
 
     c1, c2, c3 = st.columns(3)
     c1.metric("🎯 Média", r["media"])
@@ -256,12 +310,18 @@ if st.session_state.resumo_simulacao:
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-# ================= JOGOS =================
+# ======================================================
+# JOGOS GERADOS
+# ======================================================
+
 if st.session_state.jogos:
-    st.subheader("🎲 Jogos Gerados")
+    st.markdown("""
+    <div class="card">
+        <div class="card-title">🎲 Jogos Gerados</div>
+    """, unsafe_allow_html=True)
 
     for i, jogo in enumerate(st.session_state.jogos, 1):
-        st.markdown(f"### Jogo {i}")
+        st.markdown(f"**Jogo {i}**")
         cols = st.columns(5)
 
         for c, n in zip(cols * 3, jogo):
@@ -269,6 +329,7 @@ if st.session_state.jogos:
                 st.session_state.comparacao_ativa
                 and n in (st.session_state.resultado_real or [])
             )
+
             c.markdown(
                 f"""
                 <div class="numero {'acerto' if acerto else ''}">
@@ -283,3 +344,4 @@ if st.session_state.jogos:
             pontos = len(set(jogo) & set(st.session_state.resultado_real))
             st.success(f"🎯 {pontos} pontos")
 
+    st.markdown("</div>", unsafe_allow_html=True)
